@@ -1,0 +1,12 @@
+libcoro (sources/ccoro) copyright holders:
+Alexandr Lyapunov a.lyapunov@corp.mail.ru
+Barabanov Anton a.barabanov@corp.mail.ru
+Eugeny Blikh bigbes@gmail.com
+Georgy Kirichenko kirichenkoga@gmail.com
+Konstantin Osipov kostja.osipov@gmail.com
+Marc Alexander Lehmann <schmorp@schmorp.de>
+Nick Zavaritsky mejedi@gmail.com
+Roman Tokarev rtokarev@corp.mail.ru
+Roman Tsisyk roman@tsisyk.com
+Vladimir Rudnyh rudnyh@corp.mail.ru
+Yuriy Vostrikov vostrikov@corp.mail.ru
