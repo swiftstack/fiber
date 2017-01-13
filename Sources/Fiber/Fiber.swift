@@ -26,7 +26,7 @@ extension Stack {
 
 public struct Fiber {
     enum State {
-        case none, sleep, ready, expired, cached
+        case none, sleep, ready, canceled, expired, cached
     }
 
     var id: Int
