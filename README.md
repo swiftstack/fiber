@@ -1,7 +1,6 @@
 # Fiber
 
 Cooperative multitasking written in swift with only [one exception](https://github.com/tris-foundation/fiber/tree/master/Sources/CCoro).
-Doesn't have channels yet.
 
 ## Package.swift
 
@@ -33,6 +32,30 @@ FiberLoop.main.run()
 // no, you first
 // bye from fiber 2
 // bye from fiber 1
+```
+
+```swift
+var channel = Channel<Int>()
+
+fiber {
+    while let value = channel.read() {
+        print("read: \(value)")
+    }
+    print("read: the channel is closed.")
+}
+
+fiber {
+    for i in 0..<5 {
+        channel.write(i)
+    }
+    channel.close()
+}
+// read: 0
+// read: 1
+// read: 2
+// read: 3
+// read: 4
+// read: the channel is closed.
 ```
 
 ```swift
