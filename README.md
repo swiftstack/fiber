@@ -12,6 +12,8 @@ Cooperative multitasking written in swift with only [one exception](https://gith
 
 You can find this code and more in [examples](https://github.com/tris-foundation/examples).
 
+### Transfer execution
+
 ```swift
 fiber {
     print("hello from fiber 1")
@@ -33,6 +35,8 @@ FiberLoop.main.run()
 // bye from fiber 2
 // bye from fiber 1
 ```
+
+### Channel
 
 ```swift
 var channel = Channel<Int>()
@@ -57,6 +61,8 @@ fiber {
 // read: 4
 // read: the channel is closed.
 ```
+
+### Timer
 
 ```swift
 let now = Date()
