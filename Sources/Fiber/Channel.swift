@@ -77,6 +77,12 @@ public final class Channel<T> {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .canceled)
     }
 
+    @_specialize(Int)
+    @_specialize(UInt)
+    @_specialize(Bool)
+    @_specialize(Void)
+    @_specialize(Double)
+    @_specialize(String)
     @discardableResult
     public func write(_ value: T) -> Bool {
         guard !closed else {
@@ -97,6 +103,12 @@ public final class Channel<T> {
         return true
     }
 
+    @_specialize(Int)
+    @_specialize(UInt)
+    @_specialize(Bool)
+    @_specialize(Void)
+    @_specialize(Double)
+    @_specialize(String)
     public func read() -> T? {
         guard !closed else {
             return nil
