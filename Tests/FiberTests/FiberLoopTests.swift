@@ -1,7 +1,6 @@
 import XCTest
 @testable import Fiber
 import Foundation
-import Dispatch
 import Platform
 
 class FiberLoopTests: XCTestCase {
@@ -19,11 +18,11 @@ class FiberLoopTests: XCTestCase {
         XCTAssertEqual(FiberLoop.main, FiberLoop.current)
     }
 
+    @available(OSX 10.12, *)
     func testEvenLoopAnotherThread() {
-        DispatchQueue.global().async {
+        Thread {
             XCTAssertNotEqual(FiberLoop.main, FiberLoop.current)
-        }
-        FiberLoop.main.run(until: Date(timeIntervalSinceNow: 1))
+        }.start()
     }
 
     @available(OSX 10.12, *)
@@ -38,7 +37,5 @@ class FiberLoopTests: XCTestCase {
         }.start()
 
         XCTAssertEqual(FiberLoop.main, FiberLoop.current)
-
-        FiberLoop.main.run(until: Date(timeIntervalSinceNow: 1))
     }
 }
