@@ -13,9 +13,9 @@ extension timespec {
             if info.numer == 0 || info.denom == 0 {
                 mach_timebase_info(&info)
             }
-            let time = mach_absolute_time();
-            ts.tv_sec = Int(time) * Int(info.numer) / Int(info.denom)
-            ts.tv_nsec = Int(time) * Int(info.numer) / Int(info.denom * 1_000_000_000)
+            let time = mach_absolute_time() * UInt64(info.numer / info.denom);
+            ts.tv_sec = Int(time / 1_000_000_000)
+            ts.tv_nsec = Int(time % 1_000_000_000)
         };
     #else
         clock_gettime(CLOCK_MONOTONIC, &ts)
