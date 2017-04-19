@@ -16,8 +16,8 @@ public struct AsyncFiber: Async {
     public struct Awaiter: IOAwaiter {
         public init() {}
 
-        public func wait(for descriptor: Descriptor, event: IOEvent) throws {
-            try FiberLoop.current.wait(for: descriptor, event: event, deadline: Date.distantFuture)
+        public func wait(for descriptor: Descriptor, event: IOEvent, deadline: Date = Date.distantFuture) throws {
+            try FiberLoop.current.wait(for: descriptor, event: event, deadline: deadline)
         }
     }
 
