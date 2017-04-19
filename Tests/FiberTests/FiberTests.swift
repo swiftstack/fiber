@@ -8,34 +8,32 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
-import XCTest
+import struct Foundation.Date
 @testable import Fiber
 
-class FiberTests: XCTestCase {
+class FiberTests: TestCase {
     func testFiber() {
         var a = 0
-        
+
         fiber {
             a = 1
             yield()
-            XCTAssertEqual(a, 2)
+            assertEqual(a, 2)
             a = 3
         }
 
         fiber {
-            XCTAssertEqual(a, 1)
+            assertEqual(a, 1)
             a = 2
             yield()
-            XCTAssertEqual(a, 3)
+            assertEqual(a, 3)
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
     }
 
 
-    static var allTests : [(String, (FiberTests) -> () throws -> Void)] {
-        return [
-            ("testFiber", testFiber),
-        ]
-    }
+    static var allTests = [
+        ("testFiber", testFiber),
+    ]
 }
