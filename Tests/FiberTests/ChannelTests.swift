@@ -1,20 +1,20 @@
-import XCTest
+import struct Foundation.Date
 @testable import Fiber
 
-class ChannelTests: XCTestCase {
+class ChannelTests: TestCase {
     func testChannel() {
         let channel = Channel<Int>()
 
         fiber {
             guard let value = channel.read() else {
-                XCTFail()
+                fail()
                 return
             }
-            XCTAssertEqual(value, 42)
+            assertEqual(value, 42)
         }
 
         fiber {
-            XCTAssertTrue(channel.write(42))
+            assertTrue(channel.write(42))
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
@@ -24,26 +24,26 @@ class ChannelTests: XCTestCase {
         let channel = Channel<Int>()
 
         channel.close()
-        XCTAssertFalse(channel.write(42))
-        XCTAssertNil(channel.read())
+        assertFalse(channel.write(42))
+        assertNil(channel.read())
     }
 
     func testChannelHasReader() {
         let channel = Channel<Int>()
 
         fiber {
-            XCTAssertFalse(channel.hasReaders)
+            assertFalse(channel.hasReaders)
             _ = channel.read()
-            XCTAssertFalse(channel.hasReaders)
-            XCTAssert(channel.queue.count == 0)
+            assertFalse(channel.hasReaders)
+            assertEqual(channel.queue.count, 0)
         }
 
         fiber {
-            XCTAssertTrue(channel.hasReaders)
-            XCTAssert(channel.queue.count == 0)
+            assertTrue(channel.hasReaders)
+            assertEqual(channel.queue.count, 0)
             channel.write(42)
-            XCTAssertFalse(channel.hasReaders)
-            XCTAssert(channel.queue.count == 1)
+            assertFalse(channel.hasReaders)
+            assertEqual(channel.queue.count, 1)
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
@@ -53,15 +53,15 @@ class ChannelTests: XCTestCase {
         let channel = Channel<Int>()
 
         fiber {
-            XCTAssertFalse(channel.hasWriters)
+            assertFalse(channel.hasWriters)
             channel.write(42)
-            XCTAssertFalse(channel.hasWriters)
+            assertFalse(channel.hasWriters)
         }
 
         fiber {
-            XCTAssertTrue(channel.hasWriters)
+            assertTrue(channel.hasWriters)
             _ = channel.read()
-            XCTAssertFalse(channel.hasWriters)
+            assertFalse(channel.hasWriters)
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
@@ -71,9 +71,9 @@ class ChannelTests: XCTestCase {
         let channel = Channel<Int>()
 
         fiber {
-            XCTAssertTrue(channel.isEmpty)
-            XCTAssertFalse(channel.canWrite)
-            XCTAssertFalse(channel.canRead)
+            assertTrue(channel.isEmpty)
+            assertFalse(channel.canWrite)
+            assertFalse(channel.canRead)
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
@@ -83,17 +83,17 @@ class ChannelTests: XCTestCase {
         let channel = Channel<Int>(capacity: 1)
 
         fiber {
-            XCTAssertTrue(channel.isEmpty)
-            XCTAssertTrue(channel.canWrite)
-            XCTAssertFalse(channel.canRead)
+            assertTrue(channel.isEmpty)
+            assertTrue(channel.canWrite)
+            assertFalse(channel.canRead)
             channel.write(1)
-            XCTAssertFalse(channel.isEmpty)
-            XCTAssertFalse(channel.canWrite)
-            XCTAssertTrue(channel.canRead)
+            assertFalse(channel.isEmpty)
+            assertFalse(channel.canWrite)
+            assertTrue(channel.canRead)
             _ = channel.read()
-            XCTAssertTrue(channel.isEmpty)
-            XCTAssertTrue(channel.canWrite)
-            XCTAssertFalse(channel.canRead)
+            assertTrue(channel.isEmpty)
+            assertTrue(channel.canWrite)
+            assertFalse(channel.canRead)
         }
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
@@ -109,7 +109,7 @@ class ChannelTests: XCTestCase {
             channel.close()
         }
 
-        XCTAssertTrue(channel.isEmpty)
+        assertTrue(channel.isEmpty)
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
     }
@@ -119,8 +119,8 @@ class ChannelTests: XCTestCase {
 
         fiber {
             let first = channel.read()
-            XCTAssertTrue(channel.isEmpty)
-            XCTAssertEqual(first, 0)
+            assertTrue(channel.isEmpty)
+            assertEqual(first, 0)
         }
 
         fiber {
@@ -140,7 +140,7 @@ class ChannelTests: XCTestCase {
         var result: Optional<Int> = 42
         fiber {
             result = channel.read()
-            XCTAssertNil(result)
+            assertNil(result)
         }
 
         fiber {
@@ -149,7 +149,7 @@ class ChannelTests: XCTestCase {
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
         // failed
-        // XCTAssertNil(result)
+        // assertNil(result)
     }
 
     // TODO: test succeed if run manually
@@ -159,7 +159,7 @@ class ChannelTests: XCTestCase {
         var result = true
         fiber {
             result = channel.write(42)
-            XCTAssertFalse(result)
+            assertFalse(result)
         }
 
         fiber {
@@ -168,6 +168,6 @@ class ChannelTests: XCTestCase {
 
         FiberLoop.current.run(until: Date().addingTimeInterval(1))
         // failed
-        // XCTAssertFalse(result)
+        // assertFalse(result)
     }
 }
