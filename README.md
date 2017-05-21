@@ -5,7 +5,7 @@ Cooperative multitasking written in swift with only [one exception](https://gith
 ## Package.swift
 
 ```swift
-.Package(url: "https://github.com/tris-foundation/fiber.git", majorVersion: 0)
+.Package(url: "https://github.com/tris-foundation/fiber.git", majorVersion: 0, minor: 3)
 ```
 
 ## Usage

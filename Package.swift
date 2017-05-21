@@ -17,9 +17,21 @@ let package = Package(
         Target(name: "AsyncFiber", dependencies: ["Fiber"])
     ],
     dependencies: [
-        .Package(url: "https://github.com/tris-foundation/platform.git", majorVersion: 0),
-        .Package(url: "https://github.com/tris-foundation/async.git", majorVersion: 0),
-        .Package(url: "https://github.com/tris-foundation/log.git", majorVersion: 0),
+        .Package(
+            url: "https://github.com/tris-foundation/platform.git",
+            majorVersion: 0,
+            minor: 3
+        ),
+        .Package(
+            url: "https://github.com/tris-foundation/async.git",
+            majorVersion: 0,
+            minor: 3
+        ),
+        .Package(
+            url: "https://github.com/tris-foundation/log.git",
+            majorVersion: 0,
+            minor: 3
+        ),
     ]
 )
 
