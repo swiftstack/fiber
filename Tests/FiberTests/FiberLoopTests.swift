@@ -1,6 +1,8 @@
-@testable import Fiber
-import Foundation
+import Test
 import Platform
+@testable import Fiber
+
+import class Foundation.Thread
 
 @available(OSX 10.12, *)
 class FiberLoopTests: TestCase {

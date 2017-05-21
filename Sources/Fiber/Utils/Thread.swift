@@ -2,7 +2,7 @@ import Platform
 import Foundation
 
 #if os(Linux)
-let _CFIsMainThread: @convention(c) (Void) -> Bool = {
+let _CFIsMainThread: @convention(c) () -> Bool = {
     return try! resolveFunction(name: "_CFIsMainThread")
 }()
 

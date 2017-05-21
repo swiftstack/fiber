@@ -13,7 +13,7 @@ public class ThreadSpecific<T: AnyObject> {
         })
     }
 
-    public func get(_ constructor: (Void) -> T) -> T {
+    public func get(_ constructor: () -> T) -> T {
         if let specific = pthread_getspecific(key) {
             return Unmanaged<T>.fromOpaque(specific).takeUnretainedValue()
         } else {
