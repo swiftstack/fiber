@@ -109,9 +109,10 @@
             while count < 0 {
                 if let deadline = deadline {
                     var timeout = deadline.timeoutSinceNow
-                    count = kevent(descriptor, &changes, Int32(changes.count), &events, Int32(events.count), &timeout)
+                    count = kevent(descriptor, changes, Int32(changes.count), &events, Int32(events.count), &timeout)
                 } else {
-                    count = kevent(descriptor, &changes, Int32(changes.count), &events, Int32(events.count), nil)
+                    var events = self.events
+                    count = kevent(descriptor, changes, Int32(changes.count), &events, Int32(events.count), nil)
                 }
 
                 changes.removeAll(keepingCapacity: true)

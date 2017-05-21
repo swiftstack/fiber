@@ -8,8 +8,10 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
-import struct Foundation.Date
+import Test
 @testable import Fiber
+
+import struct Foundation.Date
 
 class FiberTests: TestCase {
     func testFiber() {

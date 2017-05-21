@@ -1,3 +1,4 @@
+// swift-tools-version:4.0
 /*
  * Copyright 2017 Tris Foundation and the project authors
  *
@@ -12,29 +13,37 @@ import PackageDescription
 
 let package = Package(
     name: "Fiber",
-    targets: [
-        Target(name: "Fiber", dependencies: ["CCoro"]),
-        Target(name: "AsyncFiber", dependencies: ["Fiber"])
+    products: [
+        .library(name: "Fiber", targets: ["Fiber"]),
+        .library(name: "AsyncFiber", targets: ["AsyncFiber"])
     ],
     dependencies: [
-        .Package(
+        .package(
             url: "https://github.com/tris-foundation/platform.git",
-            majorVersion: 0,
-            minor: 3
+            from: "0.4.0"
         ),
-        .Package(
+        .package(
             url: "https://github.com/tris-foundation/async.git",
-            majorVersion: 0,
-            minor: 3
+            from: "0.4.0"
         ),
-        .Package(
+        .package(
             url: "https://github.com/tris-foundation/log.git",
-            majorVersion: 0,
-            minor: 3
+            from: "0.4.0"
         ),
+        .package(
+            url: "https://github.com/tris-foundation/test.git",
+            from: "0.4.0"
+        )
+    ],
+    targets: [
+        .target(name: "CCoro"),
+        .target(name: "Fiber", dependencies: ["CCoro", "Async", "Log"]),
+        .target(name: "AsyncFiber", dependencies: ["Fiber"]),
+        .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"])
     ]
 )
 
 #if os(Linux)
+package.targets.append(.target(name: "CEpoll"))
 package.targets[0].dependencies.append("CEpoll")
 #endif
