@@ -10,11 +10,9 @@
 
 import Test
 import Platform
+import Dispatch
 @testable import Fiber
 
-import class Foundation.Thread
-
-@available(OSX 10.12, *)
 class FiberLoopTests: TestCase {
     func testEventLoop() {
         let loop = FiberLoop()
@@ -31,21 +29,27 @@ class FiberLoopTests: TestCase {
     }
 
     func testEvenLoopAnotherThread() {
-        Thread {
+        let condition = AtomicCondition()
+        DispatchQueue.global(qos: .background).async {
             assertNotEqual(FiberLoop.main, FiberLoop.current)
-        }.start()
+            condition.signal()
+        }
+        condition.wait()
     }
 
     func testFiberLoop() {
+        let condition = AtomicCondition()
         let main = FiberLoop.current
 
-        Thread {
+        DispatchQueue.global(qos: .background).async {
             let first = FiberLoop.current
             let second = FiberLoop.current
             assertEqual(first, second)
             assertNotEqual(first, main)
-        }.start()
+            condition.signal()
+        }
 
+        condition.wait()
         assertEqual(FiberLoop.main, FiberLoop.current)
     }
 
