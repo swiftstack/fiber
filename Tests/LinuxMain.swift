@@ -15,4 +15,5 @@ XCTMain([
     testCase(FiberTests.allTests),
     testCase(ChannelTests.allTests),
     testCase(FiberLoopTests.allTests),
+    testCase(DispatchTests.allTests),
 ])
