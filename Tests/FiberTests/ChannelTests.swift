@@ -29,7 +29,7 @@ class ChannelTests: TestCase {
             assertTrue(channel.write(42))
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelClose() {
@@ -58,7 +58,7 @@ class ChannelTests: TestCase {
             assertEqual(channel.queue.count, 1)
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelHasWriter() {
@@ -76,7 +76,7 @@ class ChannelTests: TestCase {
             assertFalse(channel.hasWriters)
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelCapacity0() {
@@ -88,7 +88,7 @@ class ChannelTests: TestCase {
             assertFalse(channel.canRead)
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelCapacity1() {
@@ -108,7 +108,7 @@ class ChannelTests: TestCase {
             assertFalse(channel.canRead)
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelCloseNoReader() {
@@ -122,17 +122,15 @@ class ChannelTests: TestCase {
         }
 
         assertTrue(channel.isEmpty)
-
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 
     func testChannelCloseHasReader() {
         let channel = Channel<Int>(capacity: 10)
 
+        var first: Int? = nil
         fiber {
-            let first = channel.read()
-            assertTrue(channel.isEmpty)
-            assertEqual(first, 0)
+            first = channel.read()
         }
 
         fiber {
@@ -142,45 +140,41 @@ class ChannelTests: TestCase {
             channel.close()
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
+        assertTrue(channel.isEmpty)
+        assertEqual(first, 0)
     }
 
-    // TODO: test succeed if run manually
     func testChannelCloseHasWaitingReader() {
         let channel = Channel<Int>()
 
         var result: Optional<Int> = 42
         fiber {
             result = channel.read()
-            assertNil(result)
         }
 
         fiber {
             channel.close()
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
-        // failed
-        // assertNil(result)
+        FiberLoop.current.run()
+        assertNil(result)
     }
 
-    // TODO: test succeed if run manually
     func testChannelCloseHasWaitingWriter() {
         let channel = Channel<Int>()
 
         var result = true
         fiber {
             result = channel.write(42)
-            assertFalse(result)
         }
 
         fiber {
             channel.close()
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
-        // failed
-        // assertFalse(result)
+        FiberLoop.current.run()
+        assertFalse(result)
     }
 
 

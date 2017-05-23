@@ -64,7 +64,7 @@ public class FiberScheduler {
         fiber.pointee.transfer(from: caller)
     }
 
-    public func sleep() {
+    func sleep() {
         let child = running
         guard let parent = child.pointee.caller else {
             Log.critical("can't yield into the void")
