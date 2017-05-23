@@ -15,6 +15,7 @@ import struct Foundation.Date
 
 extension FiberLoop {
     public func dispatch<T>(
+        qos: DispatchQoS.QoSClass = .background,
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
@@ -25,7 +26,7 @@ extension FiberLoop {
 
         try wait(for: fd.1, event: .write, deadline: deadline)
 
-        DispatchQueue.global(qos: .background).async {
+        DispatchQueue.global(qos: qos).async {
             do {
                 result = try task()
             } catch {

@@ -9,7 +9,9 @@
  */
 
 import Async
-import Foundation
+
+import struct Foundation.Date
+import struct Dispatch.DispatchQoS
 
 public func fiber(_ task: @escaping AsyncTask) {
     FiberLoop.current.scheduler.async(task)
@@ -29,8 +31,12 @@ public func now() -> Date {
 
 /// Spawn DispatchQueue.global().async task and yield until it's done
 public func dispatch<T>(
+    qos: DispatchQoS.QoSClass = .background,
     deadline: Date = Date.distantFuture,
     task: @escaping () throws -> T
 ) throws -> T {
-    return try FiberLoop.current.dispatch(deadline: deadline, task: task)
+    return try FiberLoop.current.dispatch(
+        qos: qos,
+        deadline: deadline,
+        task: task)
 }
