@@ -163,18 +163,9 @@ public class FiberLoop {
 
     public func wait(for deadline: Deadline) {
         let watcher = Watcher(fiber: currentFiber, deadline: deadline)
-        add(watcher)
-        scheduler.sleep()
-        remove(watcher)
-    }
-
-    func add(_ watcher: Watcher) {
         activeWatchers.append(watcher)
-    }
-
-    func remove(_ watcher: Watcher) {
-        let index = activeWatchers.index(of: watcher)!
-        activeWatchers.remove(at: index)
+        scheduler.sleep()
+        activeWatchers.remove(watcher)
     }
 
     public func wait(for socket: Descriptor, event: IOEvent, deadline: Deadline) throws {
@@ -211,15 +202,25 @@ public class FiberLoop {
         switch event {
         case .read:
             watchers[fd].read = nil
-            let index = activeWatchers.index(of: watcher)!
-            activeWatchers.remove(at: index)
+            activeWatchers.remove(watcher)
 
         case .write:
             watchers[fd].write = nil
-            let index = activeWatchers.index(of: watcher)!
-            activeWatchers.remove(at: index)
+            activeWatchers.remove(watcher)
         }
 
         poller.remove(socket: descriptor, event: event)
+    }
+}
+
+extension Array where Element : Equatable {
+    @inline(__always)
+    @discardableResult
+    mutating func remove(_ element: Element) -> Bool {
+        guard let index = self.index(of: element) else {
+            return false
+        }
+        self.remove(at: index)
+        return true
     }
 }
