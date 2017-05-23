@@ -65,14 +65,16 @@ public class FiberLoop {
         }
     }
 
-    var loopDeadline = Deadline.distantFuture
+    var deadline = Deadline.distantFuture
 
     var nextDeadline: Deadline {
         if scheduler.hasReady {
             return now
         }
 
-        var deadline = loopDeadline
+        precondition(activeWatchers.count > 0)
+
+        var deadline = Date.distantFuture
         for watcher in activeWatchers {
             deadline = min(deadline, watcher.deadline)
         }
@@ -87,28 +89,30 @@ public class FiberLoop {
         activeWatchers = []
     }
 
-    var started = false
-    public func run(until deadline: Date = Date.distantFuture) {
-        if !started {
-            started = true
-            loopDeadline = deadline
-            runLoop()
-        }
-    }
-
     var readyCount = 0
 
     var now = Date()
 
-    func runLoop() {
-        while true {
+    var running = false
+    public func run(until deadline: Date = Date.distantFuture) {
+        guard !self.running else {
+            return
+        }
+        self.running = true
+        self.deadline = deadline
+
+        while running {
             do {
-                let deadline = nextDeadline
-                guard deadline >= now else {
+                guard now < deadline else {
                     break
                 }
 
-                let events = try poller.poll(deadline: deadline)
+                guard activeWatchers.count > 0 || scheduler.hasReady else {
+                    Log.critical("No fiber to schedule, shutting down.")
+                    break
+                }
+
+                let events = try poller.poll(deadline: nextDeadline)
                 now = Date()
 
                 scheduleReady(events)
@@ -118,6 +122,20 @@ public class FiberLoop {
                 Log.error("poll error \(error)")
             }
         }
+
+        self.running = false
+        cleanup()
+    }
+
+    public func `break`() {
+        running = false
+    }
+
+    func cleanup() {
+        for watcher in activeWatchers {
+            scheduler.schedule(fiber: watcher.fiber, state: .canceled)
+        }
+        runScheduled()
     }
 
     func scheduleReady(_ events: ArraySlice<Event>) {

@@ -3,6 +3,8 @@ import Platform
 import Dispatch
 @testable import Fiber
 
+import struct Foundation.Date
+
 class FiberLoopTests: TestCase {
     func testEventLoop() {
         let loop = FiberLoop()
@@ -47,5 +49,19 @@ class FiberLoopTests: TestCase {
         semaphore.wait()
         assertTrue(tested)
         assertEqual(FiberLoop.main, FiberLoop.current)
+    }
+
+    func testLoopRunDeadline() {
+        var wokeUp = false
+        var state: Fiber.State = .none
+        fiber {
+            sleep(until: Date().addingTimeInterval(-1))
+            state = FiberLoop.current.scheduler.running.pointee.state
+            wokeUp = true
+        }
+
+        FiberLoop.current.run()
+        assertTrue(wokeUp)
+        assertEqual(state, .expired)
     }
 }
