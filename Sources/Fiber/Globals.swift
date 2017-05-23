@@ -16,3 +16,11 @@ public func sleep(until deadline: Date) {
 public func now() -> Date {
     return FiberLoop.current.now
 }
+
+/// Spawn DispatchQueue.global().async task and yield until it's done
+public func dispatch<T>(
+    deadline: Date = Date.distantFuture,
+    task: @escaping () throws -> T
+) throws -> T {
+    return try FiberLoop.current.dispatch(deadline: deadline, task: task)
+}
