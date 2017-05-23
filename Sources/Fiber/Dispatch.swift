@@ -43,7 +43,9 @@ extension FiberLoop {
         var fd: (Descriptor, Descriptor) = (0, 0)
         let pointer = UnsafeMutableRawPointer(&fd)
             .assumingMemoryBound(to: Int32.self)
-        Platform.pipe(pointer)
+        guard Platform.pipe(pointer) != -1 else {
+            throw SystemError()
+        }
         return fd
     }
 }
