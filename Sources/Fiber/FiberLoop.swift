@@ -58,6 +58,12 @@ public class FiberLoop {
 
     var scheduler: FiberScheduler
 
+    var currentFiber: UnsafeMutablePointer<Fiber> {
+        @inline (__always) get {
+            return scheduler.running
+        }
+    }
+
     public private(set) static var main = FiberLoop()
     private static var _current = ThreadSpecific<FiberLoop>()
     public class var current: FiberLoop {
@@ -166,7 +172,7 @@ public class FiberLoop {
     }
 
     public func wait(for deadline: Deadline) {
-        let watcher = Watcher(fiber: scheduler.running, deadline: deadline)
+        let watcher = Watcher(fiber: currentFiber, deadline: deadline)
         add(watcher)
         scheduler.sleep()
         remove(watcher)
@@ -182,7 +188,7 @@ public class FiberLoop {
     }
 
     public func wait(for socket: Descriptor, event: IOEvent, deadline: Deadline) throws {
-        let watcher = Watcher(fiber: scheduler.running, deadline: deadline)
+        let watcher = Watcher(fiber: currentFiber, deadline: deadline)
         try add(watcher, for: socket, event: event)
         scheduler.sleep()
         remove(watcher, for: socket, event: event)
