@@ -1,3 +1,4 @@
+import Async
 import Platform
 import Dispatch
 
@@ -34,7 +35,9 @@ extension FiberLoop {
         close(fd.0)
         close(fd.1)
 
-        if let taskError = taskError {
+        if isCanceled {
+            throw AsyncTaskCanceled()
+        } else if let taskError = taskError {
             throw taskError
         } else if let result = result {
             return result

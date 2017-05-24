@@ -21,6 +21,6 @@ class FiberTests: TestCase {
             assertEqual(a, 3)
         }
 
-        FiberLoop.current.run(until: Date().addingTimeInterval(1))
+        FiberLoop.current.run()
     }
 }
