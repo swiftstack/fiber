@@ -71,13 +71,13 @@ class DispatchTests: TestCase {
         FiberLoop.current.run()
         assertNotNil(taskError)
         if let error = taskError {
-            assertEqual(error as! SomeError, SomeError(code: 42))
+            assertEqual(error as? SomeError, SomeError(code: 42))
         }
     }
 
 
     static var allTests = [
         ("testDispatch", testDispatch),
-        ("testDispatchThrow", testDispatchThrow),
+        ("testDispatchThrow", testDispatchThrow)
     ]
 }

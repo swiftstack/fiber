@@ -27,11 +27,14 @@ extension FiberLoop {
         try wait(for: fd.1, event: .write, deadline: deadline)
 
         DispatchQueue.global(qos: qos).async {
-            do {
-                result = try task()
-            } catch {
-                taskError = error
+            fiber {
+                do {
+                    result = try task()
+                } catch {
+                    taskError = error
+                }
             }
+            FiberLoop.current.run()
             var done: UInt8 = 1
             write(fd.1, &done, 1)
         }
