@@ -75,6 +75,6 @@ class FiberLoopTests: TestCase {
         ("testEventLoopMain", testEventLoopMain),
         ("testEventLoopCurrent", testEventLoopCurrent),
         ("testEvenLoopAnotherThread", testEvenLoopAnotherThread),
-        ("testFiberLoop", testFiberLoop),
+        ("testFiberLoop", testFiberLoop)
     ]
 }

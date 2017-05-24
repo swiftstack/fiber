@@ -103,6 +103,11 @@ public class FiberLoop {
 
     var now = Date()
 
+    var canceled = false
+    public var isCanceled: Bool {
+        return canceled
+    }
+
     var running = false
     public func run(until deadline: Date = Date.distantFuture) {
         guard !self.running else {
@@ -111,7 +116,7 @@ public class FiberLoop {
         self.running = true
         self.deadline = deadline
 
-        while running {
+        while !canceled {
             do {
                 guard now < deadline else {
                     break
@@ -133,15 +138,16 @@ public class FiberLoop {
             }
         }
 
+        wakeupSuspended()
         self.running = false
-        cleanup()
+        self.canceled = false
     }
 
     public func `break`() {
-        running = false
+        canceled = true
     }
 
-    func cleanup() {
+    func wakeupSuspended() {
         for watcher in activeWatchers {
             scheduler.schedule(fiber: watcher.fiber, state: .canceled)
         }

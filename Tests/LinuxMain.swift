@@ -10,10 +10,12 @@
 
 import XCTest
 @testable import FiberTests
+@testable import AsyncFiberTests
 
 XCTMain([
     testCase(FiberTests.allTests),
     testCase(ChannelTests.allTests),
     testCase(FiberLoopTests.allTests),
     testCase(DispatchTests.allTests),
+    testCase(AsyncFiberTests.allTests),
 ])
