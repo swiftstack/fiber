@@ -5,7 +5,7 @@ import Dispatch
 import struct Foundation.Date
 
 extension FiberLoop {
-    public func dispatch<T>(
+    public func syncTask<T>(
         qos: DispatchQoS.QoSClass = .background,
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T

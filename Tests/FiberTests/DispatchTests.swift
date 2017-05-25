@@ -21,7 +21,7 @@ class DispatchTests: TestCase {
 
         fiber {
             do {
-                result = try dispatch {
+                result = try syncTask {
                     // block thread
                     sleep(1)
                     return 42
@@ -50,7 +50,7 @@ class DispatchTests: TestCase {
 
         fiber {
             do {
-                _ = try dispatch {
+                _ = try syncTask {
                     throw SomeError(code: 42)
                 }
             } catch {

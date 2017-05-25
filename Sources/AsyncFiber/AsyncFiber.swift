@@ -20,7 +20,10 @@ public struct AsyncFiber: Async {
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
-        return try dispatch(qos: qos, deadline: deadline, task: task)
+        return try FiberLoop.current.syncTask(
+            qos: qos,
+            deadline: deadline,
+            task: task)
     }
 
     public func sleep(until deadline: Date) {
