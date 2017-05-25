@@ -45,8 +45,8 @@ extension FiberLoop {
         close(fd.0)
         close(fd.1)
 
-        if isCanceled {
-            throw AsyncTaskCanceled()
+        if currentFiber.pointee.state == .canceled {
+            throw AsyncError.taskCanceled
         } else if let taskError = taskError {
             throw taskError
         } else if let result = result {
