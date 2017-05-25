@@ -21,7 +21,7 @@ extension FiberLoop {
         task: @escaping () throws -> T
     ) throws -> T {
         var result: T? = nil
-        var taskError: Error? = nil
+        var error: Error? = nil
 
         let fd = try pipe()
 
@@ -31,8 +31,8 @@ extension FiberLoop {
             fiber {
                 do {
                     result = try task()
-                } catch {
-                    taskError = error
+                } catch let taskError {
+                    error = taskError
                 }
             }
             FiberLoop.current.run()
@@ -45,15 +45,15 @@ extension FiberLoop {
         close(fd.0)
         close(fd.1)
 
-        if currentFiber.pointee.state == .canceled {
-            throw AsyncError.taskCanceled
-        } else if let taskError = taskError {
-            throw taskError
-        } else if let result = result {
+        if let result = result {
             return result
-        } else {
-            fatalError()
+        } else if let error = error {
+            throw error
+        } else if currentFiber.pointee.state == .canceled {
+            throw AsyncError.taskCanceled
         }
+
+        fatalError()
     }
 
     fileprivate func pipe() throws -> (Descriptor, Descriptor) {
