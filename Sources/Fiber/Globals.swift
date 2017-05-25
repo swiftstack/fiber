@@ -35,12 +35,12 @@ public func now() -> Date {
 
 /// Spawn DispatchQueue.global().async task and yield until it's done
 @inline(__always)
-public func dispatch<T>(
+public func syncTask<T>(
     qos: DispatchQoS.QoSClass = .background,
     deadline: Date = Date.distantFuture,
     task: @escaping () throws -> T
 ) throws -> T {
-    return try FiberLoop.current.dispatch(
+    return try FiberLoop.current.syncTask(
         qos: qos,
         deadline: deadline,
         task: task)
