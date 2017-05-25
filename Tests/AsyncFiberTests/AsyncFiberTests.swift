@@ -24,6 +24,7 @@ class AsyncFiberTests: TestCase {
 
     func testSyncTask() {
         let async = AsyncFiber()
+        var tested = false
 
         var iterations: Int = 0
         var result: Int = 0
@@ -43,15 +44,16 @@ class AsyncFiberTests: TestCase {
                     sleep(1)
                     return 42
                 }
-                async.loop.break()
+                assertEqual(result, 42)
+                assertEqual(iterations, 10)
+                tested = true
             } catch {
                 fail(String(describing: error))
             }
         }
 
         async.loop.run()
-        assertEqual(result, 42)
-        assertEqual(iterations, 10)
+        assertTrue(tested)
     }
 
     func testSyncTaskCancel() {
@@ -64,7 +66,8 @@ class AsyncFiberTests: TestCase {
 
         async.task {
             assertNotNil(try? async.testCancel())
-            async.loop.break()
+            // the only way right now to cancel the fiber. well, all of them.
+            FiberLoop.current.break()
             assertNil(try? async.testCancel())
         }
 
@@ -83,7 +86,7 @@ class AsyncFiberTests: TestCase {
 
         async.loop.run()
 
-        assertTrue(error is AsyncTaskCanceled)
+        assertEqual(error as? AsyncError, .taskCanceled)
         assertTrue(taskDone)
         assertFalse(syncTaskDone)
     }

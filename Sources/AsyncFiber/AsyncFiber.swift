@@ -29,8 +29,9 @@ public struct AsyncFiber: Async {
 
     public func testCancel() throws {
         yield()
+        // TODO: Fiber.current.isCanceled
         if FiberLoop.current.isCanceled {
-            throw AsyncTaskCanceled()
+            throw AsyncError.taskCanceled
         }
     }
 }
@@ -43,10 +44,6 @@ extension AsyncFiber {
 
         public func run(until date: Date) {
             FiberLoop.current.run(until: date)
-        }
-
-        public func `break`() {
-            FiberLoop.current.break()
         }
     }
 }
