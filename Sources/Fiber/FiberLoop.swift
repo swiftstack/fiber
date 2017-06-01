@@ -46,6 +46,7 @@ public class FiberLoop {
     var watchers: [WatchersPair]
     var activeWatchers: [Watcher]
 
+    @_versioned
     var scheduler: FiberScheduler
 
     var currentFiber: UnsafeMutablePointer<Fiber> {
@@ -91,6 +92,7 @@ public class FiberLoop {
 
     var readyCount = 0
 
+    @_versioned
     var now = Date()
 
     var canceled = false

@@ -66,6 +66,7 @@ public class FiberScheduler {
         child.pointee.yield(to: parent)
     }
 
+    @_versioned
     func yield() {
         ready.append(running)
         sleep()
