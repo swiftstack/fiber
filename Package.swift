@@ -49,5 +49,5 @@ let package = Package(
 
 #if os(Linux)
 package.targets.append(.target(name: "CEpoll"))
-package.targets[0].dependencies.append("CEpoll")
+package.targets[1].dependencies.append("CEpoll")
 #endif
