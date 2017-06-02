@@ -140,7 +140,9 @@ public class FiberLoop {
             }
         }
 
+        scheduler.cancelReady()
         wakeupSuspended()
+        runScheduled()
         self.running = false
         self.canceled = false
     }
@@ -153,7 +155,6 @@ public class FiberLoop {
         for watcher in activeWatchers {
             scheduler.schedule(fiber: watcher.fiber, state: .canceled)
         }
-        runScheduled()
     }
 
     func scheduleReady(_ events: ArraySlice<Event>) {
