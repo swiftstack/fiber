@@ -91,6 +91,12 @@ public class FiberScheduler {
         }
     }
 
+    func cancelReady() {
+        for fiber in ready {
+            fiber.pointee.state = .canceled
+        }
+    }
+
     func schedule(fiber: UnsafeMutablePointer<Fiber>, state: Fiber.State)
     {
         fiber.pointee.state = state
