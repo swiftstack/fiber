@@ -74,6 +74,7 @@ class AsyncFiberTests: TestCase {
         async.task {
             do {
                 try async.syncTask {
+                    FiberLoop.current.break()
                     try async.testCancel()
                     syncTaskDone = true
                 }
