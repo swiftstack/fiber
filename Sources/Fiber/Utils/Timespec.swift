@@ -7,7 +7,7 @@ extension timespec {
         var ts = timespec()
     #if os(macOS) || os(iOS)
         if #available(OSX 10.12, *) {
-            clock_gettime(_CLOCK_MONOTONIC, &ts)
+            clock_gettime(CLOCK_MONOTONIC, &ts)
         } else {
             var info = mach_timebase_info_data_t()
             if info.numer == 0 || info.denom == 0 {
