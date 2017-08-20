@@ -64,4 +64,18 @@ class FiberLoopTests: TestCase {
         assertTrue(wokeUp)
         assertEqual(state, .expired)
     }
+
+    func testPollDeadline() {
+        var pollError: PollError? = nil
+        fiber {
+            do {
+                try FiberLoop.current.wait(for: 0, event: .read, deadline: Date())
+            } catch {
+                pollError = error as? PollError
+            }
+        }
+
+        FiberLoop.current.run()
+        assertEqual(pollError, .timeout)
+    }
 }

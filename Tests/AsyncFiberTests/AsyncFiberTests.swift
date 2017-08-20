@@ -91,4 +91,19 @@ class AsyncFiberTests: TestCase {
         assertTrue(taskDone)
         assertFalse(syncTaskDone)
     }
+
+    func testAwaiterDeadline() {
+        let async = AsyncFiber()
+        var asyncError: AsyncError? = nil
+        async.task {
+            do {
+                try async.awaiter?.wait(for: 0, event: .read, deadline: Date())
+            } catch {
+                asyncError = error as? AsyncError
+            }
+        }
+
+        FiberLoop.current.run()
+        assertEqual(asyncError, .timeout)
+    }
 }
