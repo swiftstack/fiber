@@ -70,10 +70,14 @@ extension AsyncFiber {
             event: IOEvent,
             deadline: Date = Date.distantFuture
         ) throws {
-            try FiberLoop.current.wait(
-                for: descriptor,
-                event: event,
-                deadline: deadline)
+            do {
+                try FiberLoop.current.wait(
+                    for: descriptor,
+                    event: event,
+                    deadline: deadline)
+            } catch let error as PollError where error == .timeout {
+                throw AsyncError.timeout
+            }
         }
     }
 }

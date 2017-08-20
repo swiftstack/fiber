@@ -13,9 +13,10 @@ import Async
 import Platform
 import Foundation
 
-enum PollError: Error {
+public enum PollError: Error {
     case alreadyInUse
     case doesNotExist
+    case timeout
 }
 
 struct Watcher {
@@ -210,6 +211,10 @@ public class FiberLoop {
         try add(watcher, for: socket, event: event)
         scheduler.sleep()
         remove(watcher, for: socket, event: event)
+        switch currentFiber.pointee.state {
+        case .expired: throw PollError.timeout
+        default: break
+        }
     }
 
     func add(_ watcher: Watcher, for descriptor: Descriptor, event: IOEvent) throws {

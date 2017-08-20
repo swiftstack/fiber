@@ -69,12 +69,28 @@ class FiberLoopTests: TestCase {
         assertEqual(state, .expired)
     }
 
+    func testPollDeadline() {
+        var pollError: PollError? = nil
+        fiber {
+            do {
+                try FiberLoop.current.wait(for: 0, event: .read, deadline: Date())
+            } catch {
+                pollError = error as? PollError
+            }
+        }
+
+        FiberLoop.current.run()
+        assertEqual(pollError, .timeout)
+    }
+
 
     static var allTests = [
         ("testEventLoop", testEventLoop),
         ("testEventLoopMain", testEventLoopMain),
         ("testEventLoopCurrent", testEventLoopCurrent),
         ("testEvenLoopAnotherThread", testEvenLoopAnotherThread),
-        ("testFiberLoop", testFiberLoop)
+        ("testFiberLoop", testFiberLoop),
+        ("testLoopRunDeadline", testLoopRunDeadline),
+        ("testPollDeadline", testPollDeadline)
     ]
 }
