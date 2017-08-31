@@ -6,7 +6,8 @@ import struct Foundation.Date
 
 extension FiberLoop {
     public func syncTask<T>(
-        qos: DispatchQoS.QoSClass = .background,
+        onQueue queue: DispatchQueue = DispatchQueue.global(),
+        qos: DispatchQoS = .background,
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
@@ -17,7 +18,7 @@ extension FiberLoop {
 
         try wait(for: fd.1, event: .write, deadline: deadline)
 
-        DispatchQueue.global(qos: qos).async {
+        let workItem = DispatchWorkItem(qos: qos) {
             fiber {
                 do {
                     result = try task()
@@ -29,6 +30,8 @@ extension FiberLoop {
             var done: UInt8 = 1
             write(fd.1, &done, 1)
         }
+
+        queue.async(execute: workItem)
 
         try wait(for: fd.0, event: .read, deadline: deadline)
 
