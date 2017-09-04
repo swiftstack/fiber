@@ -97,7 +97,7 @@ class AsyncFiberTests: TestCase {
         var asyncError: AsyncError? = nil
         async.task {
             do {
-                try async.awaiter?.wait(for: 0, event: .read, deadline: Date())
+                try async.wait(for: 0, event: .read, deadline: Date())
             } catch {
                 asyncError = error as? AsyncError
             }

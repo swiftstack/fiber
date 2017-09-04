@@ -10,7 +10,6 @@ public struct AsyncFiber: Async {
     public init() {}
 
     public var loop: AsyncLoop = Loop()
-    public var awaiter: IOAwaiter? = Awaiter()
 
     public func task(_ closure: @escaping AsyncTask) -> Void {
         fiber(closure)
@@ -23,10 +22,20 @@ public struct AsyncFiber: Async {
         task: @escaping () throws -> T
     ) throws -> T {
         return try FiberLoop.current.syncTask(
-            onQueue: queue,
-            qos: qos,
-            deadline: deadline,
-            task: task)
+            onQueue: queue, qos: qos, deadline: deadline, task: task)
+    }
+
+    public func wait(
+        for descriptor: Descriptor,
+        event: IOEvent,
+        deadline: Date = Date.distantFuture
+    ) throws {
+        do {
+            try FiberLoop.current.wait(
+                for: descriptor, event: event, deadline: deadline)
+        } catch let error as PollError where error == .timeout {
+            throw AsyncError.timeout
+        }
     }
 
     public func sleep(until deadline: Date) {
@@ -50,27 +59,6 @@ extension AsyncFiber {
 
         public func run(until date: Date) {
             FiberLoop.current.run(until: date)
-        }
-    }
-}
-
-extension AsyncFiber {
-    public struct Awaiter: IOAwaiter {
-        public init() {}
-
-        public func wait(
-            for descriptor: Descriptor,
-            event: IOEvent,
-            deadline: Date = Date.distantFuture
-        ) throws {
-            do {
-                try FiberLoop.current.wait(
-                    for: descriptor,
-                    event: event,
-                    deadline: deadline)
-            } catch let error as PollError where error == .timeout {
-                throw AsyncError.timeout
-            }
         }
     }
 }
