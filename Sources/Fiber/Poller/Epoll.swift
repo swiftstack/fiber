@@ -15,8 +15,6 @@
     import Platform
     import Foundation
 
-    public typealias Descriptor = Int32
-
     typealias Poller = Epoll
     typealias Event = epoll_event
 
@@ -36,11 +34,11 @@
             case .read: self.events = EPOLLIN.rawValue
             case .write: self.events = EPOLLOUT.rawValue
             }
-            self.data = epoll_data_t(fd: descriptor)
+            self.data = epoll_data_t(fd: descriptor.rawValue)
         }
 
         var descriptor: Descriptor {
-            return Descriptor(self.data.fd)
+            return Descriptor(rawValue: self.data.fd)!
         }
     }
 
@@ -76,24 +74,19 @@
         var pollSize = 256
 
         init() {
-            events = [Event](repeating: Event(), count: pollSize)
-
-            var descriptor = epoll_create1(Int32(EPOLL_CLOEXEC))
-            if descriptor == -1 && (errno == EINVAL || errno == ENOSYS) {
-                descriptor = epoll_create(Int32(pollSize))
-                if descriptor != -1 {
-                    _ = ioctl(descriptor, UInt(FIOCLEX));
-                }
+            let fd = epoll_create1(Int32(EPOLL_CLOEXEC))
+            guard let descriptor = Descriptor(rawValue: fd) else {
+                fatalError("epoll init failed")
             }
-            assert(descriptor != -1, "epoll init failed")
             self.descriptor = descriptor
-            self.descriptor.flags |= FD_CLOEXEC
+
+            self.events = [Event](repeating: Event(), count: pollSize)
         }
 
         mutating func poll(deadline: Deadline?) throws -> ArraySlice<Event> {
             var count: Int32 = -1
             while count < 0 {
-                count = epoll_wait(descriptor, &events, Int32(events.count), deadline?.timeoutSinceNow ?? -1)
+                count = epoll_wait(descriptor.rawValue, &events, Int32(events.count), deadline?.timeoutSinceNow ?? -1)
                 guard count >= 0 || errno == EINTR else {
                     throw EventError()
                 }
@@ -103,12 +96,12 @@
 
         mutating func add(socket: Descriptor, event: IOEvent) {
             var event = Event(descriptor: socket, type: event)
-            epoll_ctl(descriptor, EPOLL_CTL_ADD, socket, &event)
+            epoll_ctl(descriptor.rawValue, EPOLL_CTL_ADD, socket.rawValue, &event)
         }
 
         mutating func remove(socket: Descriptor, event: IOEvent) {
             var event = Event(descriptor: socket, type: event)
-            epoll_ctl(descriptor, EPOLL_CTL_DEL, socket, &event)
+            epoll_ctl(descriptor.rawValue, EPOLL_CTL_DEL, socket.rawValue, &event)
         }
     }
     

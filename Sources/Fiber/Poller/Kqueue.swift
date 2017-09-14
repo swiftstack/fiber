@@ -14,8 +14,6 @@
     import Platform
     import Foundation
 
-    public typealias Descriptor = Int32
-
     typealias Poller = Kqueue
     typealias Event = kevent
 
@@ -31,7 +29,7 @@
         }
 
         init(descriptor: Descriptor, type: IOEvent, action: Action) {
-            self.ident = UInt(descriptor)
+            self.ident = UInt(descriptor.rawValue)
             switch type {
             case .read: self.filter = Int16(EVFILT_READ)
             case .write: self.filter = Int16(EVFILT_WRITE)
@@ -46,7 +44,7 @@
         }
 
         var descriptor: Descriptor {
-            return Descriptor(self.ident)
+            return Descriptor(rawValue: Int32(self.ident))!
         }
     }
 
@@ -94,13 +92,15 @@
         var pollSize = 256
 
         init() {
-            descriptor = kqueue()
+            let fd = kqueue()
+            guard var descriptor = Descriptor(rawValue: fd) else {
+                fatalError("kqueue init failed")
+            }
             descriptor.flags |= FD_CLOEXEC
+            self.descriptor = descriptor
 
-            events = [Event](repeating: Event(), count: pollSize)
-            changes = [Event]()
-
-            assert(descriptor != -1, "kqueue init failed")
+            self.events = [Event](repeating: Event(), count: pollSize)
+            self.changes = [Event]()
         }
 
         mutating func poll(deadline: Deadline?) throws -> ArraySlice<Event> {
@@ -109,10 +109,10 @@
             while count < 0 {
                 if let deadline = deadline {
                     var timeout = deadline.timeoutSinceNow
-                    count = kevent(descriptor, changes, Int32(changes.count), &events, Int32(events.count), &timeout)
+                    count = kevent(descriptor.rawValue, changes, Int32(changes.count), &events, Int32(events.count), &timeout)
                 } else {
                     var events = self.events
-                    count = kevent(descriptor, changes, Int32(changes.count), &events, Int32(events.count), nil)
+                    count = kevent(descriptor.rawValue, changes, Int32(changes.count), &events, Int32(events.count), nil)
                 }
 
                 changes.removeAll(keepingCapacity: true)

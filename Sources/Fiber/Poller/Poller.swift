@@ -9,6 +9,7 @@
  */
 
 import Async
+import Platform
 import Foundation
 
 protocol PollerProtocol {

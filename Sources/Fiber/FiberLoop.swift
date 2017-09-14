@@ -160,7 +160,7 @@ public class FiberLoop {
 
     func scheduleReady(_ events: ArraySlice<Event>) {
         for event in events {
-            let index = Int(event.descriptor)
+            let index = Int(event.descriptor.rawValue)
 
             guard watchers[index].read != nil || watchers[index].write != nil else {
                 // kqueue error on closed descriptor
@@ -218,7 +218,7 @@ public class FiberLoop {
     }
 
     func add(_ watcher: Watcher, for descriptor: Descriptor, event: IOEvent) throws {
-        let fd = Int(descriptor)
+        let fd = Int(descriptor.rawValue)
 
         switch event {
         case .read:
@@ -239,7 +239,7 @@ public class FiberLoop {
     }
 
     func remove(_ watcher: Watcher, for descriptor: Descriptor, event: IOEvent) {
-        let fd = Int(descriptor)
+        let fd = Int(descriptor.rawValue)
 
         switch event {
         case .read:

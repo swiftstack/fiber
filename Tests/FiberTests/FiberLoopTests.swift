@@ -73,7 +73,9 @@ class FiberLoopTests: TestCase {
         var pollError: PollError? = nil
         fiber {
             do {
-                try FiberLoop.current.wait(for: 0, event: .read, deadline: Date())
+                let descriptor = Descriptor(rawValue: 0)!
+                try FiberLoop.current
+                    .wait(for: descriptor, event: .read, deadline: Date())
             } catch {
                 pollError = error as? PollError
             }
