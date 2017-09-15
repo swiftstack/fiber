@@ -71,5 +71,9 @@ extension AsyncFiber {
         public func run(until date: Date) {
             FiberLoop.current.run(until: date)
         }
+
+        public func terminate() {
+            FiberLoop.current.break()
+        }
     }
 }

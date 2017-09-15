@@ -77,14 +77,14 @@ class AsyncFiberTests: TestCase {
         async.task {
             assertNotNil(try? async.testCancel())
             // the only way right now to cancel the fiber. well, all of them.
-            FiberLoop.current.break()
+            async.loop.terminate()
             assertNil(try? async.testCancel())
         }
 
         async.task {
             do {
                 try async.syncTask {
-                    FiberLoop.current.break()
+                    async.loop.terminate()
                     try async.testCancel()
                     syncTaskDone = true
                 }
@@ -114,7 +114,7 @@ class AsyncFiberTests: TestCase {
             }
         }
 
-        FiberLoop.current.run()
+        async.loop.run()
         assertEqual(asyncError, .timeout)
     }
 
