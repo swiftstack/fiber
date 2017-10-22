@@ -18,19 +18,18 @@ typealias Context = coro_context
 struct Stack {
     let pointer: UnsafeMutableRawPointer
     let size: Int
-    let alignment: Int
 }
 
 extension Stack {
     static func allocate() -> Stack {
         let size = 64 * 1024
-        let alignment = 0
-        let pointer = UnsafeMutableRawPointer.allocate(bytes: size, alignedTo: alignment)
-        return Stack(pointer: pointer, size: size, alignment: alignment)
+        let pointer = UnsafeMutableRawPointer.allocate(
+            bytes: size, alignedTo: MemoryLayout<UInt>.size)
+        return Stack(pointer: pointer, size: size)
     }
 
     func deallocate() {
-        pointer.deallocate(bytes: size, alignedTo: alignment)
+        pointer.deallocate(bytes: size, alignedTo: MemoryLayout<UInt>.size)
     }
 }
 
