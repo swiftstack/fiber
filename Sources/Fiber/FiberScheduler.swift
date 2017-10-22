@@ -17,7 +17,7 @@ public class FiberScheduler {
 
     deinit {
         for fiber in fibers {
-            fiber.pointee.deallocateStack()
+            fiber.pointee.deallocate()
             fiber.deallocate(capacity: 1)
         }
         scheduler.deallocate(capacity: 1)

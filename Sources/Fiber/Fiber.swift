@@ -54,7 +54,7 @@ public struct Fiber {
         }, nil, stack!.pointer.baseAddress, stack!.pointer.count)
     }
 
-    mutating func deallocateStack() {
+    mutating func deallocate() {
         if let stack = stack {
             stack.deallocate()
             self.stack = nil
