@@ -8,7 +8,6 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
-import Log
 import Async
 import Foundation
 
@@ -67,8 +66,7 @@ public class FiberScheduler {
     func sleep() {
         let child = running
         guard let parent = child.pointee.caller else {
-            Log.critical("can't yield into the void")
-            abort()
+            fatalError("can't yield from the outside of a fiber")
         }
         running = parent
         child.pointee.caller = scheduler
@@ -87,8 +85,7 @@ public class FiberScheduler {
             let fiber = running
 
             guard let task = fiber.pointee.task else {
-                Log.critical("don't know what to do")
-                abort()
+                fatalError("fiber task can't be nil")
             }
 
             task()

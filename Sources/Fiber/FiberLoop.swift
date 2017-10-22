@@ -165,12 +165,10 @@ public class FiberLoop {
             guard watchers[index].read != nil || watchers[index].write != nil else {
                 // kqueue error on closed descriptor
                 if event.isError {
-                    Log.error("event \(EventError())")
+                    Log.error("event error: \(EventError())")
                     return
                 }
-                // shouldn't happen
-                Log.critical("zombie descriptor \(event.descriptor) event (\"\\(O.o)/\") booooo!")
-                abort()
+                fatalError("defunct descriptor \(event.descriptor)")
             }
 
             if event.typeOptions.contains(.read),
