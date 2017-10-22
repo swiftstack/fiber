@@ -6,20 +6,19 @@ import Foundation
 typealias Context = coro_context
 
 struct Stack {
-    let pointer: UnsafeMutableRawPointer
-    let size: Int
+    let pointer: UnsafeMutableRawBufferPointer
 }
 
 extension Stack {
+    private static let defaultSize = 64 * 1024
+
     static func allocate() -> Stack {
-        let size = 64 * 1024
-        let pointer = UnsafeMutableRawPointer.allocate(
-            bytes: size, alignedTo: MemoryLayout<UInt>.size)
-        return Stack(pointer: pointer, size: size)
+        return Stack(pointer: UnsafeMutableRawBufferPointer.allocate(
+            count: defaultSize))
     }
 
     func deallocate() {
-        pointer.deallocate(bytes: size, alignedTo: MemoryLayout<UInt>.size)
+        pointer.deallocate()
     }
 }
 
@@ -52,7 +51,7 @@ public struct Fiber {
 
         coro_create(&context, { _ in
             FiberLoop.current.scheduler.lifecycle()
-        }, nil, stack!.pointer, stack!.size)
+        }, nil, stack!.pointer.baseAddress, stack!.pointer.count)
     }
 
     mutating func deallocateStack() {
