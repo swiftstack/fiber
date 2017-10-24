@@ -3,12 +3,6 @@ import Async
 import Platform
 import Foundation
 
-public enum PollError: Error {
-    case alreadyInUse
-    case doesNotExist
-    case timeout
-}
-
 struct Watcher {
     let fiber: UnsafeMutablePointer<Fiber>
     let deadline: Deadline
@@ -23,11 +17,6 @@ extension Watcher: Equatable {
 struct WatchersPair {
     var read: Watcher?
     var write: Watcher?
-}
-
-public struct EventError: Error, CustomStringConvertible {
-    public let number = errno
-    public let description = String(cString: strerror(errno))
 }
 
 extension FiberLoop: Equatable {
