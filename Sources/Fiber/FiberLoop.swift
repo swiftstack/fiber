@@ -11,43 +11,31 @@
 import Log
 import Async
 import Platform
+import ListEntry
 import Foundation
 
-struct Watcher {
-    let fiber: UnsafeMutablePointer<Fiber>
-    let deadline: Deadline
-}
-
-extension Watcher: Equatable {
-    public static func ==(lhs: Watcher, rhs: Watcher) -> Bool {
-        return lhs.fiber == rhs.fiber
+extension FiberLoop {
+    struct Watchers {
+        var read: UnsafeMutablePointer<Fiber>?
+        var write: UnsafeMutablePointer<Fiber>?
     }
 }
 
-struct WatchersPair {
-    var read: Watcher?
-    var write: Watcher?
-}
-
-extension FiberLoop: Equatable {
-    public static func ==(lhs: FiberLoop, rhs: FiberLoop) -> Bool {
-        return lhs.poller == rhs.poller
-    }
-}
-
-extension Thread {
-    var isMain: Bool {
-        return true
+extension FiberLoop.Watchers {
+    var isActive: Bool {
+        @inline(__always) get {
+            return read != nil || write != nil
+        }
     }
 }
 
 public class FiberLoop {
-    var poller: Poller
-    var watchers: [WatchersPair]
-    var activeWatchers: [Watcher]
+    var poller = Poller()
+    var watchers: UnsafeMutableBufferPointer<Watchers>
+    var activeWatchers: UnsafeMutablePointer<WatcherEntry>
 
     @_versioned
-    var scheduler: FiberScheduler
+    var scheduler = FiberScheduler()
 
     var currentFiber: UnsafeMutablePointer<Fiber> {
         @inline (__always) get {
@@ -72,22 +60,22 @@ public class FiberLoop {
         if scheduler.hasReady {
             return now
         }
-
-        precondition(activeWatchers.count > 0)
-
-        var deadline = Date.distantFuture
-        for watcher in activeWatchers {
-            deadline = min(deadline, watcher.deadline)
-        }
-        return deadline
+        assert(!activeWatchers.isEmpty)
+        return activeWatchers.first!.pointee.payload.pointee.deadline
     }
 
     public init() {
-        scheduler = FiberScheduler()
-        poller = Poller()
+        watchers = UnsafeMutableBufferPointer.allocate(
+            repeating: Watchers(),
+            count: Descriptor.maxLimit)
 
-        watchers = [WatchersPair](repeating: WatchersPair(), count: Descriptor.maxLimit)
-        activeWatchers = []
+        activeWatchers = UnsafeMutablePointer.allocate(
+            payload: scheduler.running)
+    }
+
+    deinit {
+        watchers.deallocate()
+        activeWatchers.deallocate()
     }
 
     var readyCount = 0
@@ -142,8 +130,8 @@ public class FiberLoop {
     }
 
     func wakeupSuspended() {
-        for watcher in activeWatchers {
-            scheduler.schedule(fiber: watcher.fiber, state: .canceled)
+        for watcher in activeWatchers.pointee {
+            scheduler.schedule(fiber: watcher.pointee.payload, state: .canceled)
         }
     }
 
@@ -151,7 +139,7 @@ public class FiberLoop {
         for event in events {
             let index = Int(event.descriptor.rawValue)
 
-            guard watchers[index].read != nil || watchers[index].write != nil else {
+            guard watchers[index].isActive else {
                 // kqueue error on closed descriptor
                 if event.isError {
                     Log.error("event error: \(EventError())")
@@ -161,22 +149,24 @@ public class FiberLoop {
             }
 
             if event.typeOptions.contains(.read),
-                let watcher = watchers[index].read {
-                scheduler.schedule(fiber: watcher.fiber, state: .ready)
+                let fiber = watchers[index].read {
+                scheduler.schedule(fiber: fiber, state: .ready)
             }
 
             if event.typeOptions.contains(.write),
-                let watcher = watchers[index].write {
-                scheduler.schedule(fiber: watcher.fiber, state: .ready)
+                let fiber = watchers[index].write {
+                scheduler.schedule(fiber: fiber, state: .ready)
             }
         }
     }
 
     func scheduleExpired() {
-        for watcher in activeWatchers {
-            if watcher.deadline <= now {
-                scheduler.schedule(fiber: watcher.fiber, state: .expired)
+        for watcher in activeWatchers.pointee {
+            let fiber = watcher.pointee.payload
+            guard fiber.pointee.deadline <= now else {
+                break
             }
+            scheduler.schedule(fiber: fiber, state: .expired)
         }
     }
 
@@ -187,24 +177,29 @@ public class FiberLoop {
     }
 
     public func wait(for deadline: Deadline) {
-        let watcher = Watcher(fiber: currentFiber, deadline: deadline)
-        activeWatchers.append(watcher)
+        insertWatcher(deadline: deadline)
         scheduler.sleep()
-        activeWatchers.remove(watcher)
+        removeWatcher()
     }
 
-    public func wait(for socket: Descriptor, event: IOEvent, deadline: Deadline) throws {
-        let watcher = Watcher(fiber: currentFiber, deadline: deadline)
-        try add(watcher, for: socket, event: event)
+    public func wait(
+        for socket: Descriptor,
+        event: IOEvent,
+        deadline: Deadline
+    ) throws {
+        try insertWatcher(for: socket, event: event, deadline: deadline)
         scheduler.sleep()
-        remove(watcher, for: socket, event: event)
-        switch currentFiber.pointee.state {
-        case .expired: throw PollError.timeout
-        default: break
+        removeWatcher(for: socket, event: event)
+        if currentFiber.pointee.state == .expired {
+            throw PollError.timeout
         }
     }
 
-    func add(_ watcher: Watcher, for descriptor: Descriptor, event: IOEvent) throws {
+    func insertWatcher(
+        for descriptor: Descriptor,
+        event: IOEvent,
+        deadline: Deadline
+    ) throws {
         let fd = Int(descriptor.rawValue)
 
         switch event {
@@ -212,44 +207,86 @@ public class FiberLoop {
             guard watchers[fd].read == nil else {
                 throw PollError.alreadyInUse
             }
-            watchers[fd].read = watcher
-            activeWatchers.append(watcher)
+            watchers[fd].read = currentFiber
         case .write:
             guard watchers[fd].write == nil else {
                 throw PollError.alreadyInUse
             }
-            watchers[fd].write = watcher
-            activeWatchers.append(watcher)
+            watchers[fd].write = currentFiber
         }
 
+        insertWatcher(deadline: deadline)
         poller.add(socket: descriptor, event: event)
     }
 
-    func remove(_ watcher: Watcher, for descriptor: Descriptor, event: IOEvent) {
+    func removeWatcher(for descriptor: Descriptor, event: IOEvent) {
         let fd = Int(descriptor.rawValue)
 
         switch event {
-        case .read:
-            watchers[fd].read = nil
-            activeWatchers.remove(watcher)
-
-        case .write:
-            watchers[fd].write = nil
-            activeWatchers.remove(watcher)
+        case .read: watchers[fd].read = nil
+        case .write: watchers[fd].write = nil
         }
 
+        removeWatcher()
         poller.remove(socket: descriptor, event: event)
+    }
+
+    func insertWatcher(deadline: Deadline) {
+        currentFiber.pointee.deadline = deadline
+        if activeWatchers.isEmpty || deadline >= activeWatchers.maxDeadline! {
+            activeWatchers.append(currentFiber.pointee.watcherEntry)
+        } else if deadline < activeWatchers.minDeadline! {
+            activeWatchers.insert(currentFiber.pointee.watcherEntry)
+        } else {
+            for watcher in activeWatchers.pointee {
+                if deadline < watcher.pointee.payload.pointee.deadline {
+                    watcher.insert(currentFiber.pointee.watcherEntry)
+                    break
+                }
+                // if the deadline is further than the max deadline,
+                // it handled by the first if
+                fatalError("unreachable")
+            }
+        }
+    }
+
+    func removeWatcher() {
+        currentFiber.pointee.watcherEntry.remove()
     }
 }
 
-extension Array where Element : Equatable {
-    @inline(__always)
-    @discardableResult
-    mutating func remove(_ element: Element) -> Bool {
-        guard let index = self.index(of: element) else {
-            return false
-        }
-        self.remove(at: index)
-        return true
+extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
+    typealias Watchers = FiberLoop.Watchers
+
+    static func allocate(
+        repeating element: Watchers, count: Int
+    ) -> UnsafeMutableBufferPointer<Watchers> {
+        let pointer = UnsafeMutablePointer<Watchers>.allocate(capacity: count)
+        pointer.initialize(to: element, count: count)
+
+        return UnsafeMutableBufferPointer(
+            start: pointer,
+            count: Descriptor.maxLimit)
+    }
+
+    func deallocate() {
+        self.baseAddress!.deallocate(capacity: self.count)
+    }
+}
+
+extension UnsafeMutablePointer
+where Pointee == ListEntry<UnsafeMutablePointer<Fiber>> {
+    var minDeadline: Deadline? {
+        return first?.payload.pointee.deadline
+    }
+
+    var maxDeadline: Deadline? {
+        return last?.payload.pointee.deadline
+    }
+}
+
+extension FiberLoop: Equatable {
+    public static func ==(lhs: FiberLoop, rhs: FiberLoop) -> Bool {
+        return lhs.poller == rhs.poller
     }
 }

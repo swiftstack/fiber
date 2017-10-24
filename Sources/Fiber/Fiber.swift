@@ -11,9 +11,11 @@
 import Log
 import Async
 import CCoro
+import ListEntry
 import Foundation
 
 typealias Context = coro_context
+typealias WatcherEntry = ListEntry<UnsafeMutablePointer<Fiber>>
 
 struct Stack {
     let pointer: UnsafeMutableRawBufferPointer
@@ -46,15 +48,23 @@ public struct Fiber {
 
     var caller: UnsafeMutablePointer<Fiber>?
 
-    init(schedulerId: Int) {
+    var deadline: Deadline = .distantFuture
+    var watcherEntry: UnsafeMutablePointer<WatcherEntry>
+
+    init(schedulerId: Int, pointer: UnsafeMutablePointer<Fiber>) {
         self.id = schedulerId
         self.stack = nil
         self.state = .none
+        self.watcherEntry = UnsafeMutablePointer<WatcherEntry>.allocate(
+            payload: pointer)
     }
 
-    init(id: Int) {
+    init(id: Int, pointer: UnsafeMutablePointer<Fiber>) {
         self.id = id
         self.state = .none
+
+        self.watcherEntry = UnsafeMutablePointer<WatcherEntry>.allocate(
+            payload: pointer)
 
         // TODO: inject allocator
         self.stack = Stack.allocate()
@@ -65,6 +75,7 @@ public struct Fiber {
     }
 
     mutating func deallocate() {
+        watcherEntry.deallocate()
         if let stack = stack {
             stack.deallocate()
             self.stack = nil
