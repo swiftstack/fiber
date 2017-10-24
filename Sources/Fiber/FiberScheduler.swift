@@ -8,7 +8,7 @@ public class FiberScheduler {
 
     init() {
         scheduler = UnsafeMutablePointer<Fiber>.allocate(capacity: 1)
-        scheduler.initialize(to: Fiber(schedulerId: -1))
+        scheduler.initialize(to: Fiber(schedulerId: -1, pointer: scheduler))
         running = scheduler
 
         ready.reserveCapacity(128)
@@ -36,7 +36,7 @@ public class FiberScheduler {
             fiber = cached
         } else {
             fiber = UnsafeMutablePointer<Fiber>.allocate(capacity: 1)
-            fiber.initialize(to: Fiber(id: fibers.count))
+            fiber.initialize(to: Fiber(id: fibers.count, pointer: fiber))
             fibers.append(fiber)
         }
 

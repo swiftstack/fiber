@@ -13,6 +13,10 @@ let package = Package(
             from: "0.4.0"
         ),
         .package(
+            url: "https://github.com/swift-stack/linked-list.git",
+            from: "0.4.0"
+        ),
+        .package(
             url: "https://github.com/swift-stack/async.git",
             from: "0.4.0"
         ),
@@ -27,13 +31,14 @@ let package = Package(
     ],
     targets: [
         .target(name: "CCoro"),
-        .target(name: "Fiber", dependencies: ["CCoro", "Async", "Log"]),
+        .target(
+            name: "Fiber",
+            dependencies: ["CCoro", "LinkedList", "Async", "Log"]),
         .target(name: "AsyncFiber", dependencies: ["Fiber"]),
         .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"]),
         .testTarget(
             name: "AsyncFiberTests",
-            dependencies: ["AsyncFiber", "Fiber", "Test"]
-        )
+            dependencies: ["AsyncFiber", "Fiber", "Test"])
     ]
 )
 
