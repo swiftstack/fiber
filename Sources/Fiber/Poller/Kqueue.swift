@@ -19,18 +19,23 @@
         }
 
         init(descriptor: Descriptor, type: IOEvent, action: Action) {
-            self.ident = UInt(descriptor.rawValue)
+            let filter: Int32
             switch type {
-            case .read: self.filter = Int16(EVFILT_READ)
-            case .write: self.filter = Int16(EVFILT_WRITE)
+            case .read: filter = EVFILT_READ
+            case .write: filter = EVFILT_WRITE
             }
+            let flags: Int32
             switch action {
-            case .add: self.flags = UInt16(EV_ADD) | UInt16(EV_ONESHOT)
-            case .delete: self.flags = UInt16(EV_DELETE)
+            case .add: flags = EV_ADD | EV_ONESHOT
+            case .delete: flags = EV_DELETE
             }
-            self.fflags = 0
-            self.data = 0
-            self.udata = nil
+            self.init(
+                ident: UInt(descriptor.rawValue),
+                filter: Int16(filter),
+                flags: UInt16(flags),
+                fflags: 0,
+                data: 0,
+                udata: nil)
         }
 
         var descriptor: Descriptor {
