@@ -43,7 +43,7 @@ let package = Package(
         .target(name: "CCoro"),
         .target(
             name: "Fiber",
-            dependencies: ["CCoro", "LinkedList", "Async", "Log"]),
+            dependencies: ["CCoro", "LinkedList", "Platform", "Async", "Log"]),
         .target(name: "AsyncFiber", dependencies: ["Fiber"]),
         .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"]),
         .testTarget(
