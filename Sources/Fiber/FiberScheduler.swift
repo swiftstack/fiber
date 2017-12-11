@@ -27,9 +27,9 @@ public class FiberScheduler {
     deinit {
         for fiber in fibers {
             fiber.pointee.deallocate()
-            fiber.deallocate(capacity: 1)
+            fiber.deallocate()
         }
-        scheduler.deallocate(capacity: 1)
+        scheduler.deallocate()
     }
 
     var ready = [UnsafeMutablePointer<Fiber>]()

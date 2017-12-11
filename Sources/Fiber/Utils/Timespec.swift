@@ -73,8 +73,7 @@ extension timespec {
     init(_ interval: TimeInterval) {
         var int = 0.0
         let frac = modf(interval, &int)
-        self.tv_sec = Int(int)
-        self.tv_nsec = Int(frac * 1_000_000_000.0)
+        self.init(tv_sec: Int(int), tv_nsec: Int(frac * 1_000_000_000.0))
     }
 }
 

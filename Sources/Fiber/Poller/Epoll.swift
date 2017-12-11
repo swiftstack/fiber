@@ -30,11 +30,13 @@
 
     extension Event {
         init(descriptor: Descriptor, type: IOEvent) {
+            let events: UInt32
             switch type {
-            case .read: self.events = EPOLLIN.rawValue
-            case .write: self.events = EPOLLOUT.rawValue
+            case .read: events = EPOLLIN.rawValue
+            case .write: events = EPOLLOUT.rawValue
             }
-            self.data = epoll_data_t(fd: descriptor.rawValue)
+            let data = epoll_data_t(fd: descriptor.rawValue)
+            self.init(events: events, data: data)
         }
 
         var descriptor: Descriptor {

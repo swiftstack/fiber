@@ -262,15 +262,11 @@ extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
         repeating element: Watchers, count: Int
     ) -> UnsafeMutableBufferPointer<Watchers> {
         let pointer = UnsafeMutablePointer<Watchers>.allocate(capacity: count)
-        pointer.initialize(to: element, count: count)
+        pointer.initialize(repeating: element, count: count)
 
         return UnsafeMutableBufferPointer(
             start: pointer,
             count: Descriptor.maxLimit)
-    }
-
-    func deallocate() {
-        self.baseAddress!.deallocate(capacity: self.count)
     }
 }
 

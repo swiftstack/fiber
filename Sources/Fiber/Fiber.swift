@@ -26,7 +26,9 @@ extension Stack {
 
     static func allocate() -> Stack {
         return Stack(pointer: UnsafeMutableRawBufferPointer.allocate(
-            count: defaultSize))
+            byteCount: defaultSize,
+            alignment: MemoryLayout<UInt>.alignment
+        ))
     }
 
     func deallocate() {
