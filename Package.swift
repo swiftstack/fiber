@@ -14,8 +14,7 @@ import PackageDescription
 let package = Package(
     name: "Fiber",
     products: [
-        .library(name: "Fiber", targets: ["Fiber"]),
-        .library(name: "AsyncFiber", targets: ["AsyncFiber"])
+        .library(name: "Fiber", targets: ["Fiber"])
     ],
     dependencies: [
         .package(
@@ -39,11 +38,7 @@ let package = Package(
         .target(
             name: "Fiber",
             dependencies: ["CCoro", "LinkedList", "Platform", "Async", "Log"]),
-        .target(name: "AsyncFiber", dependencies: ["Fiber"]),
         .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"]),
-        .testTarget(
-            name: "AsyncFiberTests",
-            dependencies: ["AsyncFiber", "Fiber", "Test"])
     ]
 )
 
