@@ -1,4 +1,3 @@
-import Fiber
 import Platform
 
 @_exported import Async

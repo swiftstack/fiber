@@ -3,7 +3,7 @@ import Foundation
 import Test
 import Fiber
 import Platform
-@testable import AsyncFiber
+@testable import Fiber
 
 import struct Foundation.Date
 
