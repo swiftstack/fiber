@@ -12,6 +12,25 @@ Cooperative multitasking written in swift with only [one exception](https://gith
 
 You can find this code and more in [examples](https://github.com/tris-foundation/examples).
 
+### Real World Example (using Async abstraction)
+
+As you can see, no callback hell:
+```swift
+async.use(Fiber.self)
+
+async.task {
+    let service = client.connect("http://election.online")
+    service.login(using: cookies)
+    guard service.vote(for: "Thor") == .success else {
+        fatalError("we're doomed")
+    }
+    service.syscall(.coverMyTracks)
+    service.logout()
+}
+
+async.loop.run()
+```
+
 ### Transfer execution
 
 ```swift
