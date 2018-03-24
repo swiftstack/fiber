@@ -74,10 +74,4 @@ class DispatchTests: TestCase {
             assertEqual(error as? SomeError, SomeError(code: 42))
         }
     }
-
-
-    static var allTests = [
-        ("testDispatch", testDispatch),
-        ("testDispatchThrow", testDispatchThrow)
-    ]
 }

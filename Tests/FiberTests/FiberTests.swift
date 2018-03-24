@@ -33,9 +33,4 @@ class FiberTests: TestCase {
 
         FiberLoop.current.run()
     }
-
-
-    static var allTests = [
-        ("testFiber", testFiber)
-    ]
 }

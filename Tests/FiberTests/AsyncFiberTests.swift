@@ -117,12 +117,4 @@ class AsyncFiberTests: TestCase {
         async.loop.run()
         assertEqual(asyncError, .timeout)
     }
-
-
-    static var allTests = [
-        ("testTask", testTask),
-        ("testSyncTask", testSyncTask),
-        ("testSyncTaskCancel", testSyncTaskCancel),
-        ("testAwaiterDeadline", testAwaiterDeadline),
-    ]
 }

@@ -84,15 +84,4 @@ class FiberLoopTests: TestCase {
         FiberLoop.current.run()
         assertEqual(pollError, .timeout)
     }
-
-
-    static var allTests = [
-        ("testEventLoop", testEventLoop),
-        ("testEventLoopMain", testEventLoopMain),
-        ("testEventLoopCurrent", testEventLoopCurrent),
-        ("testEvenLoopAnotherThread", testEvenLoopAnotherThread),
-        ("testFiberLoop", testFiberLoop),
-        ("testLoopRunDeadline", testLoopRunDeadline),
-        ("testPollDeadline", testPollDeadline)
-    ]
 }

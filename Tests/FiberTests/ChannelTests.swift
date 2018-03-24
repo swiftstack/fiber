@@ -176,18 +176,4 @@ class ChannelTests: TestCase {
         FiberLoop.current.run()
         assertFalse(result)
     }
-
-
-    static var allTests = [
-        ("testChannel", testChannel),
-        ("testChannelClose", testChannelClose),
-        ("testChannelHasReader", testChannelHasReader),
-        ("testChannelHasWriter", testChannelHasWriter),
-        ("testChannelCapacity0", testChannelCapacity0),
-        ("testChannelCapacity1", testChannelCapacity1),
-        ("testChannelCloseNoReader", testChannelCloseNoReader),
-        ("testChannelCloseHasReader", testChannelCloseHasReader),
-        ("testChannelCloseHasWaitingReader", testChannelCloseHasWaitingReader),
-        ("testChannelCloseHasWaitingWriter", testChannelCloseHasWaitingWriter)
-    ]
 }
