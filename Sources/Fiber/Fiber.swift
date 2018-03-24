@@ -17,25 +17,6 @@ import Foundation
 typealias Context = coro_context
 typealias WatcherEntry = ListEntry<UnsafeMutablePointer<Fiber>>
 
-struct Stack {
-    let pointer: UnsafeMutableRawBufferPointer
-}
-
-extension Stack {
-    private static let defaultSize = 64 * 1024
-
-    static func allocate() -> Stack {
-        return Stack(pointer: UnsafeMutableRawBufferPointer.allocate(
-            byteCount: defaultSize,
-            alignment: MemoryLayout<UInt>.alignment
-        ))
-    }
-
-    func deallocate() {
-        pointer.deallocate()
-    }
-}
-
 public struct Fiber {
     enum State {
         case none, sleep, ready, canceled, expired, cached
@@ -68,12 +49,11 @@ public struct Fiber {
         self.watcherEntry = UnsafeMutablePointer<WatcherEntry>.allocate(
             payload: pointer)
 
-        // TODO: inject allocator
         self.stack = Stack.allocate()
 
         coro_create(&context, { _ in
             FiberLoop.current.scheduler.lifecycle()
-        }, nil, stack!.pointer.baseAddress, stack!.pointer.count)
+        }, nil, stack!.pointer, stack!.size)
     }
 
     mutating func deallocate() {
