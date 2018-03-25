@@ -12,7 +12,7 @@ Cooperative multitasking written in swift with only [one exception](https://gith
 
 You can find this code and more in [examples](https://github.com/tris-foundation/examples).
 
-### Real World Example (using Async abstraction)
+### Real World Example (using [Async](https://github.com/tris-foundation/async) abstraction)
 
 As you can see, no callback hell:
 ```swift
