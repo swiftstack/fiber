@@ -1,6 +1,6 @@
 # Fiber
 
-Cooperative multitasking written in swift with only [one exception](https://github.com/tris-foundation/fiber/tree/master/Sources/CCoro).
+Cooperative multitasking written in swift with only [one exception](https://github.com/tris-foundation/fiber/tree/master/Sources/CCoro/coro.c).
 
 ## Package.swift
 
