@@ -15,29 +15,28 @@ import Dispatch
 import struct Foundation.Date
 
 extension FiberLoop {
+    enum Result<T> {
+        case success(T)
+        case error(Error)
+    }
+
     public func syncTask<T>(
         onQueue queue: DispatchQueue = DispatchQueue.global(),
         qos: DispatchQoS = .background,
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
-        var value: T? = nil
-        var error: Error? = nil
-
         let fd = try pipe()
 
-        let state1 = try wait(for: fd.1, event: .write, deadline: deadline)
-        guard state1 == .ready else {
-            throw AsyncError.taskCanceled
-        }
+        guard try wait(for: fd.1, event: .write, deadline: deadline) == .ready
+        else { throw AsyncError.taskCanceled }
+
+        var result: Result<T>? = nil
 
         let workItem = DispatchWorkItem(qos: qos) {
             fiber {
-                do {
-                    value = try task()
-                } catch let taskError {
-                    error = taskError
-                }
+                do { result = .success(try task()) }
+                catch { result = .error(error) }
             }
             FiberLoop.current.run()
             var done: UInt8 = 1
@@ -51,18 +50,14 @@ extension FiberLoop {
             close(fd.1.rawValue)
         }
 
-        let state2 = try wait(for: fd.0, event: .read, deadline: deadline)
-        guard state2 == .ready else {
-            throw AsyncError.taskCanceled
-        }
+        guard try wait(for: fd.0, event: .read, deadline: deadline) == .ready
+        else { throw AsyncError.taskCanceled }
 
-        guard let result = value else {
-            switch error {
-            case .some(let error): throw error
-            default: fatalError("unreachable")
-            }
+        switch result {
+        case .some(.success(let result)): return result
+        case .some(.error(let error)): throw error
+        default: fatalError("unreachable")
         }
-        return result
     }
 
     fileprivate func pipe() throws -> (Descriptor, Descriptor) {
