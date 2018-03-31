@@ -15,8 +15,3 @@ public enum PollError: Error {
     case doesNotExist
     case timeout
 }
-
-public struct EventError: Error, CustomStringConvertible {
-    public let number = errno
-    public let description = String(cString: strerror(errno))
-}

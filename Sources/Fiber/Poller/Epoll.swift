@@ -90,7 +90,7 @@
             while count < 0 {
                 count = epoll_wait(descriptor.rawValue, &events, Int32(events.count), deadline?.timeoutSinceNow ?? -1)
                 guard count >= 0 || errno == EINTR else {
-                    throw EventError()
+                    throw SystemError()
                 }
             }
             return events.prefix(upTo: Int(count))
