@@ -176,23 +176,27 @@ public class FiberLoop {
         }
     }
 
-    public func wait(for deadline: Deadline) {
-        insertWatcher(deadline: deadline)
-        scheduler.sleep()
+    @discardableResult
+    public func wait(for date: Deadline) -> Fiber.State {
+        insertWatcher(deadline: date)
+        scheduler.suspend()
         removeWatcher()
+        return currentFiber.pointee.state
     }
 
+    @discardableResult
     public func wait(
         for socket: Descriptor,
         event: IOEvent,
-        deadline: Deadline
-    ) throws {
+        deadline: Deadline) throws -> Fiber.State
+    {
         try insertWatcher(for: socket, event: event, deadline: deadline)
-        scheduler.sleep()
+        scheduler.suspend()
         removeWatcher(for: socket, event: event)
         if currentFiber.pointee.state == .expired {
             throw PollError.timeout
         }
+        return currentFiber.pointee.state
     }
 
     func insertWatcher(

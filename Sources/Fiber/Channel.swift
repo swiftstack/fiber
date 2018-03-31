@@ -60,12 +60,6 @@ public final class Channel<T> {
 
     @_versioned
     @inline(__always)
-    func sleep() -> Fiber.State {
-        return FiberLoop.current.scheduler.sleep()
-    }
-
-    @_versioned
-    @inline(__always)
     func schedule(_ fiber: UnsafeMutablePointer<Fiber>) {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .ready)
     }
@@ -92,7 +86,7 @@ public final class Channel<T> {
 
         guard buffer.count <= capacity else {
             writers.append(this)
-            let state = sleep()
+            let state = suspend()
             return state == .ready
         }
 
@@ -114,7 +108,7 @@ public final class Channel<T> {
         }
 
         readers.append(this)
-        let state = sleep()
+        let state = suspend()
         guard state == .ready else {
             return nil
         }
