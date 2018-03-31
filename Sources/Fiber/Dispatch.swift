@@ -52,10 +52,13 @@ extension FiberLoop {
 
     fileprivate func pipe() throws -> (Descriptor, Descriptor) {
         var fd: (Int32, Int32) = (0, 0)
-        let pointer = UnsafeMutableRawPointer(&fd)
-            .assumingMemoryBound(to: Int32.self)
-        guard Platform.pipe(pointer) != -1 else {
-            throw SystemError()
+        try withUnsafeMutablePointer(to: &fd) { pointer in
+            try pointer.withMemoryRebound(to: Int32.self, capacity: 2)
+            { pointer in
+                guard Platform.pipe(pointer) != -1 else {
+                    throw SystemError()
+                }
+            }
         }
         return (Descriptor(rawValue: fd.0)!, Descriptor(rawValue: fd.1)!)
     }
