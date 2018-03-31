@@ -10,13 +10,21 @@ public func fiber(_ task: @escaping AsyncTask) {
 }
 
 @inline(__always)
-public func yield() {
-    FiberLoop.current.scheduler.yield()
+@discardableResult
+public func yield() -> Fiber.State {
+    return FiberLoop.current.scheduler.yield()
 }
 
 @inline(__always)
-public func sleep(until deadline: Date) {
-    FiberLoop.current.wait(for: deadline)
+@discardableResult
+public func suspend() -> Fiber.State {
+    return FiberLoop.current.scheduler.suspend()
+}
+
+@inline(__always)
+@discardableResult
+public func sleep(until deadline: Date) -> Fiber.State {
+    return FiberLoop.current.wait(for: deadline)
 }
 
 @inline(__always)

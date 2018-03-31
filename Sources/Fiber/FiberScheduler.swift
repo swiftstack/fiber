@@ -55,7 +55,7 @@ public class FiberScheduler {
 
     @_versioned
     @discardableResult
-    func sleep() -> Fiber.State {
+    func suspend() -> Fiber.State {
         let child = running
         guard let parent = child.pointee.caller else {
             fatalError("can't yield from the outside of a fiber")
@@ -71,7 +71,7 @@ public class FiberScheduler {
     @discardableResult
     func yield() -> Fiber.State {
         ready.append(running)
-        return sleep()
+        return suspend()
     }
 
     func lifecycle() {
@@ -88,7 +88,7 @@ public class FiberScheduler {
             fiber.pointee.state = .cached
             cache.append(fiber)
 
-            sleep()
+            suspend()
         }
     }
 
