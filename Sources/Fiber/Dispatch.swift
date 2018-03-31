@@ -11,17 +11,20 @@ extension FiberLoop {
         deadline: Date = Date.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
-        var result: T? = nil
+        var value: T? = nil
         var error: Error? = nil
 
         let fd = try pipe()
 
-        try wait(for: fd.1, event: .write, deadline: deadline)
+        let state1 = try wait(for: fd.1, event: .write, deadline: deadline)
+        guard state1 == .ready else {
+            throw AsyncError.taskCanceled
+        }
 
         let workItem = DispatchWorkItem(qos: qos) {
             fiber {
                 do {
-                    result = try task()
+                    value = try task()
                 } catch let taskError {
                     error = taskError
                 }
@@ -33,20 +36,23 @@ extension FiberLoop {
 
         queue.async(execute: workItem)
 
-        try wait(for: fd.0, event: .read, deadline: deadline)
+        defer {
+            close(fd.0.rawValue)
+            close(fd.1.rawValue)
+        }
 
-        close(fd.0.rawValue)
-        close(fd.1.rawValue)
-
-        if let result = result {
-            return result
-        } else if let error = error {
-            throw error
-        } else if currentFiber.pointee.state == .canceled {
+        let state2 = try wait(for: fd.0, event: .read, deadline: deadline)
+        guard state2 == .ready else {
             throw AsyncError.taskCanceled
         }
 
-        fatalError()
+        guard let result = value else {
+            switch error {
+            case .some(let error): throw error
+            default: fatalError("unreachable")
+            }
+        }
+        return result
     }
 
     fileprivate func pipe() throws -> (Descriptor, Descriptor) {
