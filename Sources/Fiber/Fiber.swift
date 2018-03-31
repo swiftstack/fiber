@@ -8,7 +8,7 @@ typealias Context = coro_context
 typealias WatcherEntry = ListEntry<UnsafeMutablePointer<Fiber>>
 
 public struct Fiber {
-    enum State {
+    public enum State {
         case none, sleep, ready, canceled, expired, cached
     }
 
