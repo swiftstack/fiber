@@ -9,12 +9,12 @@
  */
 
 public final class Channel<T> {
-    var closed: Bool
-    var queue: [T]
-    var buffer: [T]
-    let capacity: Int
-    var readers: [UnsafeMutablePointer<Fiber>]
-    var writers: [UnsafeMutablePointer<Fiber>]
+    @_versioned var closed: Bool
+    @_versioned var queue: [T]
+    @_versioned var buffer: [T]
+    @_versioned let capacity: Int
+    @_versioned var readers: [UnsafeMutablePointer<Fiber>]
+    @_versioned var writers: [UnsafeMutablePointer<Fiber>]
 
     public init(capacity: Int = 0) {
         self.closed = false
@@ -53,36 +53,30 @@ public final class Channel<T> {
         return writers.count > 0
     }
 
-    @inline(__always)
-    fileprivate func waitForReader() -> Fiber.State {
-        writers.append(FiberLoop.current.scheduler.running)
-        FiberLoop.current.scheduler.sleep()
-        return FiberLoop.current.scheduler.running.pointee.state
+    @_versioned
+    var this: UnsafeMutablePointer<Fiber> {
+        return FiberLoop.current.scheduler.running
     }
 
+    @_versioned
     @inline(__always)
-    fileprivate func waitForWriter() -> Fiber.State {
-        readers.append(FiberLoop.current.scheduler.running)
-        FiberLoop.current.scheduler.sleep()
-        return FiberLoop.current.scheduler.running.pointee.state
+    func sleep() -> Fiber.State {
+        return FiberLoop.current.scheduler.sleep()
     }
 
+    @_versioned
     @inline(__always)
-    fileprivate func schedule(_ fiber: UnsafeMutablePointer<Fiber>) {
+    func schedule(_ fiber: UnsafeMutablePointer<Fiber>) {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .ready)
     }
 
+    @_versioned
     @inline(__always)
-    fileprivate func cancel(_ fiber: UnsafeMutablePointer<Fiber>) {
+    func cancel(_ fiber: UnsafeMutablePointer<Fiber>) {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .canceled)
     }
 
-    @_specialize(exported: true, where T == Int)
-    @_specialize(exported: true, where T == UInt)
-    @_specialize(exported: true, where T == Bool)
-    @_specialize(exported: true, where T == Void)
-    @_specialize(exported: true, where T == Double)
-    @_specialize(exported: true, where T == String)
+    @_inlineable
     @discardableResult
     public func write(_ value: T) -> Bool {
         guard !closed else {
@@ -97,18 +91,15 @@ public final class Channel<T> {
         }
 
         guard buffer.count <= capacity else {
-            return waitForReader() == .ready
+            writers.append(this)
+            let state = sleep()
+            return state == .ready
         }
 
         return true
     }
 
-    @_specialize(exported: true, where T == Int)
-    @_specialize(exported: true, where T == UInt)
-    @_specialize(exported: true, where T == Bool)
-    @_specialize(exported: true, where T == Void)
-    @_specialize(exported: true, where T == Double)
-    @_specialize(exported: true, where T == String)
+    @_inlineable
     public func read() -> T? {
         guard !closed else {
             return nil
@@ -122,7 +113,9 @@ public final class Channel<T> {
             return buffer.removeFirst()
         }
 
-        guard waitForWriter() == .ready else {
+        readers.append(this)
+        let state = sleep()
+        guard state == .ready else {
             return nil
         }
 

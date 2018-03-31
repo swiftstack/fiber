@@ -63,7 +63,9 @@ public class FiberScheduler {
         fiber.pointee.transfer(from: caller)
     }
 
-    func sleep() {
+    @_versioned
+    @discardableResult
+    func sleep() -> Fiber.State {
         let child = running
         guard let parent = child.pointee.caller else {
             fatalError("can't yield from the outside of a fiber")
@@ -72,12 +74,14 @@ public class FiberScheduler {
         child.pointee.caller = scheduler
         child.pointee.state = .sleep
         child.pointee.yield(to: parent)
+        return running.pointee.state
     }
 
     @_versioned
-    func yield() {
+    @discardableResult
+    func yield() -> Fiber.State {
         ready.append(running)
-        sleep()
+        return sleep()
     }
 
     func lifecycle() {
@@ -104,6 +108,7 @@ public class FiberScheduler {
         }
     }
 
+    @_versioned
     func schedule(fiber: UnsafeMutablePointer<Fiber>, state: Fiber.State)
     {
         fiber.pointee.state = state
