@@ -27,6 +27,9 @@ let package = Package(
             url: "https://github.com/tris-foundation/async.git",
             .branch("master")),
         .package(
+            url: "https://github.com/tris-foundation/time.git",
+            .branch("master")),
+        .package(
             url: "https://github.com/tris-foundation/log.git",
             .branch("master")),
         .package(
@@ -37,7 +40,14 @@ let package = Package(
         .target(name: "CCoro"),
         .target(
             name: "Fiber",
-            dependencies: ["CCoro", "LinkedList", "Platform", "Async", "Log"]),
+            dependencies: [
+                "CCoro",
+                "LinkedList",
+                "Platform",
+                "Async",
+                "Time",
+                "Log"
+            ]),
         .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"]),
     ]
 )

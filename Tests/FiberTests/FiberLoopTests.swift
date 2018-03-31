@@ -9,11 +9,10 @@
  */
 
 import Test
+import Time
 import Platform
 import Dispatch
 @testable import Fiber
-
-import struct Foundation.Date
 
 class FiberLoopTests: TestCase {
     func testEventLoop() {
@@ -59,7 +58,7 @@ class FiberLoopTests: TestCase {
         var wokeUp = false
         var state: Fiber.State = .none
         fiber {
-            sleep(until: Date().addingTimeInterval(-1))
+            sleep(until: .now - 1.s)
             state = FiberLoop.current.scheduler.running.pointee.state
             wokeUp = true
         }
@@ -75,7 +74,7 @@ class FiberLoopTests: TestCase {
             do {
                 let descriptor = Descriptor(rawValue: 0)!
                 try FiberLoop.current
-                    .wait(for: descriptor, event: .read, deadline: Date())
+                    .wait(for: descriptor, event: .read, deadline: .now)
             } catch {
                 pollError = error as? PollError
             }

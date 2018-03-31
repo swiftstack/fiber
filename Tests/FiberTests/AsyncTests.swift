@@ -9,14 +9,13 @@
  */
 
 import Test
+import Time
 import Fiber
 import Platform
 import Dispatch
 
 @testable import Async
 @testable import Fiber
-
-import struct Foundation.Date
 
 class AsyncTests: TestCase {
     override func setUp() {
@@ -41,7 +40,7 @@ class AsyncTests: TestCase {
             while iterations < 10 {
                 iterations += 1
                 // tick tock tick tock
-                async.sleep(until: Date().addingTimeInterval(0.1))
+                async.sleep(until: .now - 1.ms)
             }
         }
 
@@ -103,7 +102,7 @@ class AsyncTests: TestCase {
         async.task {
             do {
                 let descriptor = Descriptor(rawValue: 0)!
-                try async.wait(for: descriptor, event: .read, deadline: Date())
+                try async.wait(for: descriptor, event: .read, deadline: .now)
             } catch {
                 asyncError = error as? AsyncError
             }

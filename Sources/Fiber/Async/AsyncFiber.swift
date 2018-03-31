@@ -8,11 +8,11 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
+import Time
 import Platform
 
 @_exported import Async
 
-import struct Foundation.Date
 import struct Dispatch.DispatchQoS
 import class Dispatch.DispatchQueue
 
@@ -28,7 +28,7 @@ public struct AsyncFiber: Async {
     public func syncTask<T>(
         onQueue queue: DispatchQueue = DispatchQueue.global(),
         qos: DispatchQoS = .background,
-        deadline: Date = Date.distantFuture,
+        deadline: Time = Time.distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
         return try FiberLoop.current.syncTask(
@@ -38,7 +38,7 @@ public struct AsyncFiber: Async {
     public func wait(
         for descriptor: Descriptor,
         event: IOEvent,
-        deadline: Date = Date.distantFuture
+        deadline: Time = Time.distantFuture
     ) throws {
         do {
             try FiberLoop.current.wait(
@@ -48,7 +48,7 @@ public struct AsyncFiber: Async {
         }
     }
 
-    public func sleep(until deadline: Date) {
+    public func sleep(until deadline: Time) {
         FiberLoop.current.wait(for: deadline)
     }
 
@@ -67,8 +67,8 @@ extension AsyncFiber {
             FiberLoop.current.run()
         }
 
-        public func run(until date: Date) {
-            FiberLoop.current.run(until: date)
+        public func run(until deadline: Time) {
+            FiberLoop.current.run(until: deadline)
         }
 
         public func terminate() {

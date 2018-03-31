@@ -9,10 +9,9 @@
  */
 
 import Test
+import Time
 import Platform
 @testable import Fiber
-
-import struct Foundation.Date
 
 class DispatchTests: TestCase {
     func testDispatch() {
@@ -25,7 +24,7 @@ class DispatchTests: TestCase {
             while iterations < 10 {
                 iterations += 1
                 // tick tock tick tock
-                sleep(until: Date().addingTimeInterval(0.1))
+                sleep(until: .now - 1.ms)
             }
         }
 

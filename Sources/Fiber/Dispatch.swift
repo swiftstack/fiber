@@ -8,11 +8,10 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
+import Time
 import Async
 import Platform
 import Dispatch
-
-import struct Foundation.Date
 
 extension FiberLoop {
     enum Result<T> {
@@ -23,7 +22,7 @@ extension FiberLoop {
     public func syncTask<T>(
         onQueue queue: DispatchQueue = DispatchQueue.global(),
         qos: DispatchQoS = .background,
-        deadline: Date = Date.distantFuture,
+        deadline: Time = .distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
         let fd = try pipe()

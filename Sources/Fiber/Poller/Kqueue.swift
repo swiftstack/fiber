@@ -10,9 +10,9 @@
 
 #if os(macOS) || os(iOS)
 
+import Time
 import Async
 import Platform
-import Foundation
 
 typealias Poller = Kqueue
 typealias Event = kevent
@@ -108,7 +108,7 @@ struct Kqueue: PollerProtocol {
         self.changes = [Event]()
     }
 
-    mutating func poll(deadline: Deadline?) throws -> ArraySlice<Event> {
+    mutating func poll(deadline: Time?) throws -> ArraySlice<Event> {
         var count: Int32 = -1
 
         while count < 0 {

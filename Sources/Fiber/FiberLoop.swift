@@ -9,10 +9,12 @@
  */
 
 import Log
+import Time
 import Async
 import Platform
 import ListEntry
-import Foundation
+
+import class Foundation.Thread
 
 extension FiberLoop {
     struct Watchers {
@@ -54,9 +56,9 @@ public class FiberLoop {
         }
     }
 
-    var deadline = Deadline.distantFuture
+    var deadline = Time.distantFuture
 
-    var nextDeadline: Deadline {
+    var nextDeadline: Time {
         if scheduler.hasReady {
             return now
         }
@@ -81,7 +83,7 @@ public class FiberLoop {
     var readyCount = 0
 
     @_versioned
-    var now = Date()
+    var now = Time()
 
     var canceled = false
     public var isCanceled: Bool {
@@ -89,7 +91,7 @@ public class FiberLoop {
     }
 
     var running = false
-    public func run(until deadline: Date = Date.distantFuture) {
+    public func run(until deadline: Time = .distantFuture) {
         guard !self.running else {
             return
         }
@@ -108,7 +110,7 @@ public class FiberLoop {
                 }
 
                 let events = try poller.poll(deadline: nextDeadline)
-                now = Date()
+                now = Time()
 
                 scheduleReady(events)
                 scheduleExpired()
@@ -177,8 +179,8 @@ public class FiberLoop {
     }
 
     @discardableResult
-    public func wait(for date: Deadline) -> Fiber.State {
-        insertWatcher(deadline: date)
+    public func wait(for deadline: Time) -> Fiber.State {
+        insertWatcher(deadline: deadline)
         scheduler.suspend()
         removeWatcher()
         return currentFiber.pointee.state
@@ -188,7 +190,7 @@ public class FiberLoop {
     public func wait(
         for socket: Descriptor,
         event: IOEvent,
-        deadline: Deadline) throws -> Fiber.State
+        deadline: Time) throws -> Fiber.State
     {
         try insertWatcher(for: socket, event: event, deadline: deadline)
         scheduler.suspend()
@@ -202,7 +204,7 @@ public class FiberLoop {
     func insertWatcher(
         for descriptor: Descriptor,
         event: IOEvent,
-        deadline: Deadline
+        deadline: Time
     ) throws {
         let fd = Int(descriptor.rawValue)
 
@@ -235,7 +237,7 @@ public class FiberLoop {
         poller.remove(socket: descriptor, event: event)
     }
 
-    func insertWatcher(deadline: Deadline) {
+    func insertWatcher(deadline: Time) {
         currentFiber.pointee.deadline = deadline
         if activeWatchers.isEmpty || deadline >= activeWatchers.maxDeadline! {
             activeWatchers.append(currentFiber.pointee.watcherEntry)
@@ -276,11 +278,11 @@ extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
 
 extension UnsafeMutablePointer
 where Pointee == ListEntry<UnsafeMutablePointer<Fiber>> {
-    var minDeadline: Deadline? {
+    var minDeadline: Time? {
         return first?.payload.pointee.deadline
     }
 
-    var maxDeadline: Deadline? {
+    var maxDeadline: Time? {
         return last?.payload.pointee.deadline
     }
 }

@@ -8,13 +8,14 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
+import Time
 import Async
 import Platform
 import Foundation
 
 protocol PollerProtocol {
     var descriptor: Descriptor { get }
-    mutating func poll(deadline: Deadline?) throws -> ArraySlice<Event>
+    mutating func poll(deadline: Time?) throws -> ArraySlice<Event>
     mutating func add(socket: Descriptor, event: IOEvent)
     mutating func remove(socket: Descriptor, event: IOEvent)
 }
