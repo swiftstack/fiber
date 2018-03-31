@@ -8,32 +8,30 @@
  * See CONTRIBUTORS.txt for the list of the project authors
  */
 
-import Foundation
-
 import Test
 import Fiber
 import Platform
+import Dispatch
+
+@testable import Async
 @testable import Fiber
 
 import struct Foundation.Date
 
-class AsyncFiberTests: TestCase {
-    func testTask() {
-        let async = AsyncFiber()
-        let condition = AtomicCondition()
+class AsyncTests: TestCase {
+    override func setUp() {
+        async.setUp(Fiber.self)
+    }
 
+    func testTask() {
         var done = false
         async.task {
             done = true
-            condition.signal()
         }
-
-        condition.wait()
         assertTrue(done)
     }
 
     func testSyncTask() {
-        let async = AsyncFiber()
         var tested = false
 
         var iterations: Int = 0
@@ -67,8 +65,6 @@ class AsyncFiberTests: TestCase {
     }
 
     func testSyncTaskCancel() {
-        let async = AsyncFiber()
-
         var taskDone = false
         var syncTaskDone = false
 
@@ -103,7 +99,6 @@ class AsyncFiberTests: TestCase {
     }
 
     func testAwaiterDeadline() {
-        let async = AsyncFiber()
         var asyncError: AsyncError? = nil
         async.task {
             do {

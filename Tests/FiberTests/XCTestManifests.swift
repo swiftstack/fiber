@@ -1,6 +1,6 @@
 import XCTest
 
-extension AsyncFiberTests {
+extension AsyncTests {
     static let __allTests = [
         ("testAwaiterDeadline", testAwaiterDeadline),
         ("testSyncTask", testSyncTask),
@@ -52,7 +52,7 @@ extension FiberTests {
 #if !os(macOS)
 public func __allTests() -> [XCTestCaseEntry] {
     return [
-        testCase(AsyncFiberTests.__allTests),
+        testCase(AsyncTests.__allTests),
         testCase(ChannelTests.__allTests),
         testCase(DispatchTests.__allTests),
         testCase(FiberLoopTests.__allTests),
