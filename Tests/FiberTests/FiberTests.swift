@@ -1,8 +1,6 @@
 import Test
 @testable import Fiber
 
-import struct Foundation.Date
-
 class FiberTests: TestCase {
     func testFiber() {
         var a = 0

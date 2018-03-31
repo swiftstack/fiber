@@ -1,4 +1,5 @@
 import Log
+import Time
 import Async
 import CCoro
 import ListEntry
@@ -21,7 +22,7 @@ public struct Fiber {
 
     var caller: UnsafeMutablePointer<Fiber>?
 
-    var deadline: Deadline = .distantFuture
+    var deadline: Time = .distantFuture
     var watcherEntry: UnsafeMutablePointer<WatcherEntry>
 
     init(schedulerId: Int, pointer: UnsafeMutablePointer<Fiber>) {
