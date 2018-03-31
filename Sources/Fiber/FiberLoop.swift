@@ -132,7 +132,7 @@ public class FiberLoop {
             guard watchers[index].isActive else {
                 // kqueue error on closed descriptor
                 if event.isError {
-                    Log.error("event error: \(EventError())")
+                    Log.error("event error: \(SystemError())")
                     return
                 }
                 fatalError("defunct descriptor \(event.descriptor)")

@@ -113,7 +113,7 @@
                 changes.removeAll(keepingCapacity: true)
 
                 guard count >= 0 || errno == EINTR else {
-                    throw EventError()
+                    throw SystemError()
                 }
             }
 
