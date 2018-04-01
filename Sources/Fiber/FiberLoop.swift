@@ -247,12 +247,10 @@ public class FiberLoop {
             for watcher in activeWatchers.pointee {
                 if deadline < watcher.pointee.payload.pointee.deadline {
                     watcher.insert(currentFiber.pointee.watcherEntry)
-                    break
+                    return
                 }
-                // if the deadline is further than the max deadline,
-                // it handled by the first if
-                fatalError("unreachable")
             }
+            fatalError("unreachable")
         }
     }
 
