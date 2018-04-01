@@ -55,7 +55,7 @@ extension FiberLoop {
         switch result {
         case .some(.success(let result)): return result
         case .some(.error(let error)): throw error
-        default: fatalError("unreachable")
+        default: throw AsyncError.taskCanceled
         }
     }
 
