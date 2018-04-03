@@ -36,7 +36,7 @@ public class FiberLoop {
     var watchers: UnsafeMutableBufferPointer<Watchers>
     var activeWatchers: UnsafeMutablePointer<WatcherEntry>
 
-    @_versioned
+    @usableFromInline
     var scheduler = FiberScheduler()
 
     var currentFiber: UnsafeMutablePointer<Fiber> {
@@ -82,7 +82,7 @@ public class FiberLoop {
 
     var readyCount = 0
 
-    @_versioned
+    @usableFromInline
     var now = Time()
 
     var canceled = false

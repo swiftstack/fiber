@@ -63,7 +63,7 @@ public class FiberScheduler {
         fiber.pointee.transfer(from: caller)
     }
 
-    @_versioned
+    @usableFromInline
     @discardableResult
     func suspend() -> Fiber.State {
         let child = running
@@ -77,7 +77,7 @@ public class FiberScheduler {
         return running.pointee.state
     }
 
-    @_versioned
+    @usableFromInline
     @discardableResult
     func yield() -> Fiber.State {
         ready.append(running)
@@ -108,7 +108,7 @@ public class FiberScheduler {
         }
     }
 
-    @_versioned
+    @usableFromInline
     func schedule(fiber: UnsafeMutablePointer<Fiber>, state: Fiber.State)
     {
         fiber.pointee.state = state
