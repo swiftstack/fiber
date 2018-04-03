@@ -1,10 +1,10 @@
 public final class Channel<T> {
-    @_versioned var closed: Bool
-    @_versioned var queue: [T]
-    @_versioned var buffer: [T]
-    @_versioned let capacity: Int
-    @_versioned var readers: [UnsafeMutablePointer<Fiber>]
-    @_versioned var writers: [UnsafeMutablePointer<Fiber>]
+    @usableFromInline var closed: Bool
+    @usableFromInline var queue: [T]
+    @usableFromInline var buffer: [T]
+    @usableFromInline let capacity: Int
+    @usableFromInline var readers: [UnsafeMutablePointer<Fiber>]
+    @usableFromInline var writers: [UnsafeMutablePointer<Fiber>]
 
     public init(capacity: Int = 0) {
         self.closed = false
@@ -43,24 +43,24 @@ public final class Channel<T> {
         return writers.count > 0
     }
 
-    @_versioned
+    @usableFromInline
     var this: UnsafeMutablePointer<Fiber> {
         return FiberLoop.current.scheduler.running
     }
 
-    @_versioned
+    @usableFromInline
     @inline(__always)
     func schedule(_ fiber: UnsafeMutablePointer<Fiber>) {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .ready)
     }
 
-    @_versioned
+    @usableFromInline
     @inline(__always)
     func cancel(_ fiber: UnsafeMutablePointer<Fiber>) {
         FiberLoop.current.scheduler.schedule(fiber: fiber, state: .canceled)
     }
 
-    @_inlineable
+    @inlinable
     @discardableResult
     public func write(_ value: T) -> Bool {
         guard !closed else {
@@ -83,7 +83,7 @@ public final class Channel<T> {
         return true
     }
 
-    @_inlineable
+    @inlinable
     public func read() -> T? {
         guard !closed else {
             return nil
