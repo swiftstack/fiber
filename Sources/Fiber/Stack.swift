@@ -14,7 +14,7 @@ struct Stack {
 let pagesize = sysconf(SC_PAGE_SIZE)
 
 extension Stack {
-    private static let size = 64.kB
+    private static let size = 128.kB
 
     // TODO: inject allocator
     static func allocate() -> Stack {
