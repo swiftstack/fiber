@@ -46,6 +46,7 @@ extension FiberLoopTests {
 extension FiberTests {
     static let __allTests = [
         ("testFiber", testFiber),
+        ("testMemoryLeak", testMemoryLeak),
     ]
 }
 
