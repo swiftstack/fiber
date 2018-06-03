@@ -21,4 +21,34 @@ class FiberTests: TestCase {
 
         FiberLoop.current.run()
     }
+
+    func testMemoryLeak() {
+        var released = false
+
+        class Test {
+            var task: () -> Void
+            init(_ task: @escaping () -> Void) {
+                self.task = task
+            }
+            @inline(never)
+            func nop() {}
+            deinit { task() }
+        }
+
+        scope {
+            let test = Test {
+                released = true
+            }
+            fiber {
+                test.nop()
+                yield()
+                test.nop()
+                // FIXME: appeared recently
+                Unmanaged.passUnretained(test).release()
+            }
+        }
+
+        FiberLoop.current.run()
+        assertTrue(released)
+    }
 }
