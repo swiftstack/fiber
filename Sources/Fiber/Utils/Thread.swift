@@ -1,5 +1,4 @@
 import Platform
-import Foundation
 
 #if os(Linux)
 let _CFIsMainThread: @convention(c) () -> Bool = {
@@ -11,8 +10,6 @@ private func pthread_main_np() -> Int32 {
 }
 #endif
 
-extension Thread {
-    class var isMain: Bool {
-        return pthread_main_np() != 0
-    }
+var isMainThread: Bool {
+    return pthread_main_np() != 0
 }

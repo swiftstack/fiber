@@ -3,7 +3,6 @@ import Time
 import Async
 import CCoro
 import ListEntry
-import Foundation
 
 typealias Context = coro_context
 typealias WatcherEntry = ListEntry<UnsafeMutablePointer<Fiber>>

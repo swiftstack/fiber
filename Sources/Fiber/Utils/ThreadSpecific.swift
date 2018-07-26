@@ -1,4 +1,4 @@
-import Foundation
+import Platform
 
 public class ThreadSpecific<T: AnyObject> {
     var key: pthread_key_t
