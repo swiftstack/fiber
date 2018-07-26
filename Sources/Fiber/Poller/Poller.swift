@@ -12,7 +12,6 @@
 import Time
 import Async
 import Platform
-import Foundation
 
 protocol PollerProtocol {
     var descriptor: Descriptor { get }

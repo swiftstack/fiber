@@ -10,7 +10,6 @@
  ******************************************************************************/
 
 import Async
-import Foundation
 
 public class FiberScheduler {
     private var fibers = [UnsafeMutablePointer<Fiber>]()

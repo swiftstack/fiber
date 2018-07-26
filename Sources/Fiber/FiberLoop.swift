@@ -49,7 +49,7 @@ public class FiberLoop {
     public private(set) static var main = FiberLoop()
     private static var _current = ThreadSpecific<FiberLoop>()
     public class var current: FiberLoop {
-        if Thread.isMain {
+        if isMainThread {
             return main
         }
         return FiberLoop._current.get() {
