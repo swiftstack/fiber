@@ -38,6 +38,10 @@ public struct AsyncFiber: Async {
         }
     }
 
+    public func yield() {
+        FiberLoop.current.scheduler.yield()
+    }
+
     public func sleep(until deadline: Time) {
         FiberLoop.current.wait(for: deadline)
     }
