@@ -84,4 +84,18 @@ class FiberLoopTests: TestCase {
         FiberLoop.current.run()
         assertEqual(pollError, .timeout)
     }
+
+    func testYieldDefersInTheSameCycle() {
+        fiber {
+            // wait for loop.run()
+            sleep(until: .now)
+            // save current time
+            let time = FiberLoop.main.now
+            // suspend
+            yield()
+            // test if the loop time is the same
+            assertEqual(FiberLoop.main.now, time)
+        }
+        FiberLoop.main.run()
+    }
 }

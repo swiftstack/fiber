@@ -174,7 +174,7 @@ public class FiberLoop {
     }
 
     func runScheduled() {
-        if scheduler.hasReady {
+        while scheduler.hasReady {
             scheduler.runReadyChain()
         }
     }
