@@ -106,7 +106,9 @@ public class FiberLoop {
                 }
 
                 guard activeWatchers.count > 0 || scheduler.hasReady else {
+                    #if DEBUG_FIBER
                     Log.debug("No fiber to schedule, shutting down.")
+                    #endif
                     break
                 }
 
