@@ -84,17 +84,18 @@ fiber {
 ### Timer
 
 ```swift
-let now = Date()
+import Time
+
 fiber {
     fiber {
-        sleep(until: now.addingTimeInterval(2))
+        sleep(until: .now + 2.ms)
         print("fiber 2 woke up")
     }
-    sleep(until: now.addingTimeInterval(1))
+    sleep(until: .now + 1.ms)
     print("fiber 1 woke up")
 }
 
-FiberLoop.main.run(until: Date().addingTimeInterval(5.0))
+FiberLoop.main.run(until: .now + 5.ms)
 
 // fiber 1 woke up
 // fiber 2 woke up
