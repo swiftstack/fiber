@@ -66,14 +66,12 @@ public class FiberScheduler {
     @usableFromInline
     @discardableResult
     func suspend() -> Fiber.State {
+        precondition(running.pointee.caller != nil, "you forgot to run a fiber")
         let child = running
-        guard let parent = child.pointee.caller else {
-            fatalError("can't yield from the outside of a fiber")
-        }
-        running = parent
+        running = child.pointee.caller!
         child.pointee.caller = scheduler
         child.pointee.state = .sleep
-        child.pointee.yield(to: parent)
+        child.pointee.yield(to: running)
         return running.pointee.state
     }
 
@@ -86,18 +84,11 @@ public class FiberScheduler {
 
     func lifecycle() {
         while true {
-            let fiber = running
-
-            guard let task = fiber.pointee.task else {
-                fatalError("fiber task can't be nil")
-            }
-
-            task()
-
-            fiber.pointee.task = nil
-            fiber.pointee.state = .cached
-            cache.append(fiber)
-
+            precondition(running.pointee.task != nil, "fiber task can't be nil")
+            running.pointee.task!()
+            running.pointee.task = nil
+            running.pointee.state = .cached
+            cache.append(running)
             suspend()
         }
     }
