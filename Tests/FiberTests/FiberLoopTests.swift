@@ -20,16 +20,20 @@ class FiberLoopTests: TestCase {
     }
 
     func testEvenLoopAnotherThread() {
-        let condition = AtomicCondition()
+        var tested = false
+        let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.global(qos: .background).async {
             assertNotEqual(FiberLoop.main, FiberLoop.current)
-            condition.signal()
+            tested = true
+            semaphore.signal()
         }
-        condition.wait()
+        semaphore.wait()
+        assertTrue(tested)
     }
 
     func testFiberLoop() {
-        let condition = AtomicCondition()
+        var tested = false
+        let semaphore = DispatchSemaphore(value: 0)
         let main = FiberLoop.current
 
         DispatchQueue.global(qos: .background).async {
@@ -37,10 +41,12 @@ class FiberLoopTests: TestCase {
             let second = FiberLoop.current
             assertEqual(first, second)
             assertNotEqual(first, main)
-            condition.signal()
+            tested = true
+            semaphore.signal()
         }
 
-        condition.wait()
+        semaphore.wait()
+        assertTrue(tested)
         assertEqual(FiberLoop.main, FiberLoop.current)
     }
 
