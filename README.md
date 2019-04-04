@@ -1,18 +1,18 @@
 # Fiber
 
-Cooperative multitasking written in swift with only [one exception](https://github.com/tris-foundation/fiber/tree/master/Sources/CCoro/coro.c).
+Cooperative multitasking written in swift with only [one exception](https://github.com/tris-code/fiber/tree/master/Sources/CCoro/coro.c).
 
 ## Package.swift
 
 ```swift
-.package(url: "https://github.com/tris-foundation/fiber.git", .branch("master"))
+.package(url: "https://github.com/tris-code/fiber.git", .branch("master"))
 ```
 
 ## Usage
 
-You can find this code and more in [examples](https://github.com/tris-foundation/examples).
+You can find this code and more in [examples](https://github.com/tris-code/examples).
 
-### Real World Example (using [Async](https://github.com/tris-foundation/async) abstraction)
+### Real World Example (using [Async](https://github.com/tris-code/async) abstraction)
 
 As you can see, no callback hell:
 ```swift
