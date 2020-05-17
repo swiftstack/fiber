@@ -17,7 +17,7 @@ class AsyncTests: TestCase {
         async.task {
             done = true
         }
-        assertTrue(done)
+        expect(done == true)
     }
 
     func testSyncTask() {
@@ -35,46 +35,44 @@ class AsyncTests: TestCase {
         }
 
         async.task {
-            do {
+            scope {
                 result = try async.syncTask {
                     // block thread
                     sleep(1)
                     return 42
                 }
-                assertEqual(result, 42)
-                assertEqual(iterations, 10)
+                expect(result == 42)
+                expect(iterations == 10)
                 tested = true
-            } catch {
-                fail(String(describing: error))
             }
         }
 
         async.loop.run()
-        assertTrue(tested)
+        expect(tested == true)
     }
 
     func testSyncTaskCancel() {
         var taskDone = false
         var syncTaskDone = false
 
-        var error: Error? = nil
-
         async.task {
-            assertNotNil(try? async.testCancel())
-            // the only way right now to cancel the fiber. well, all of them.
-            async.loop.terminate()
-            assertNil(try? async.testCancel())
+            scope {
+                try async.testCancel()
+                // the only way right now to cancel the fiber. all of them.
+                async.loop.terminate()
+            }
+            expect(throws: AsyncError.taskCanceled) {
+                try async.testCancel()
+            }
         }
 
         async.task {
-            do {
+            expect(throws: AsyncError.taskCanceled) {
                 try async.syncTask {
                     async.loop.terminate()
                     try async.testCancel()
                     syncTaskDone = true
                 }
-            } catch let taskError {
-                error = taskError
             }
 
             taskDone = true
@@ -82,9 +80,8 @@ class AsyncTests: TestCase {
 
         async.loop.run()
 
-        assertEqual(error as? AsyncError, .taskCanceled)
-        assertTrue(taskDone)
-        assertFalse(syncTaskDone)
+        expect(taskDone == true)
+        expect(syncTaskDone == false)
     }
 
     func testAwaiterDeadline() {
@@ -99,6 +96,6 @@ class AsyncTests: TestCase {
         }
 
         async.loop.run()
-        assertEqual(asyncError, .timeout)
+        expect(asyncError == .timeout)
     }
 }

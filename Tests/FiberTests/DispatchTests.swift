@@ -19,48 +19,41 @@ class DispatchTests: TestCase {
         }
 
         fiber {
-            do {
+            scope {
                 result = try syncTask {
                     // block thread
                     sleep(1)
                     return 42
                 }
                 loop.break()
-            } catch {
-                fail(String(describing: error))
             }
         }
 
         loop.run()
-        assertEqual(result, 42)
-        assertEqual(iterations, 10)
-    }
-
-    struct SomeError: Error, Equatable {
-        let code: Int
-
-        static func ==(lhs: SomeError, rhs: SomeError) -> Bool {
-            return lhs.code == rhs.code
-        }
+        expect(result == 42)
+        expect(iterations == 10)
     }
 
     func testDispatchThrow() {
-        var taskError: Error? = nil
+        struct TestError: Error, Equatable {
+            let code: Int
+        }
+        var testError: TestError? = nil
 
         fiber {
             do {
-                _ = try syncTask {
-                    throw SomeError(code: 42)
-                }
+                _ = try syncTask { throw TestError(code: 42) }
             } catch {
-                taskError = error
+                testError = error as? TestError
             }
         }
 
         FiberLoop.current.run()
-        assertNotNil(taskError)
-        if let error = taskError {
-            assertEqual(error as? SomeError, SomeError(code: 42))
+
+        guard let error = testError else {
+            fail("invalid error")
+            return
         }
+        expect(error == TestError(code: 42))
     }
 }

@@ -10,7 +10,7 @@ class BroadcastTests: TestCase {
                 fail()
                 return
             }
-            assertEqual(value, 42)
+            expect(value == 42)
         }
 
         fiber {
@@ -18,17 +18,17 @@ class BroadcastTests: TestCase {
                 fail()
                 return
             }
-            assertEqual(value, 42)
+            expect(value == 42)
         }
 
-        assertEqual(broadcast.subscribers.count, 2)
+        expect(broadcast.subscribers.count == 2)
 
         fiber {
-            assertTrue(broadcast.dispatch(42))
+            expect(broadcast.dispatch(42) == true)
         }
 
         FiberLoop.current.run()
 
-        assertEqual(broadcast.subscribers.count, 0)
+        expect(broadcast.subscribers.count == 0)
     }
 }

@@ -7,28 +7,28 @@ import Dispatch
 class FiberLoopTests: TestCase {
     func testEventLoop() {
         let loop = FiberLoop()
-        assertNotNil(loop)
+        expect(loop is FiberLoop)
     }
 
     func testEventLoopMain() {
-        assertNotNil(FiberLoop.main)
+        expect(FiberLoop.main is FiberLoop)
     }
 
     func testEventLoopCurrent() {
-        assertNotNil(FiberLoop.current)
-        assertEqual(FiberLoop.main, FiberLoop.current)
+        expect(FiberLoop.current is FiberLoop)
+        expect(FiberLoop.main == FiberLoop.current)
     }
 
     func testEvenLoopAnotherThread() {
         var tested = false
         let semaphore = DispatchSemaphore(value: 0)
         DispatchQueue.global(qos: .background).async {
-            assertNotEqual(FiberLoop.main, FiberLoop.current)
+            expect(FiberLoop.main != FiberLoop.current)
             tested = true
             semaphore.signal()
         }
         semaphore.wait()
-        assertTrue(tested)
+        expect(tested == true)
     }
 
     func testFiberLoop() {
@@ -39,15 +39,15 @@ class FiberLoopTests: TestCase {
         DispatchQueue.global(qos: .background).async {
             let first = FiberLoop.current
             let second = FiberLoop.current
-            assertEqual(first, second)
-            assertNotEqual(first, main)
+            expect(first == second)
+            expect(first != main)
             tested = true
             semaphore.signal()
         }
 
         semaphore.wait()
-        assertTrue(tested)
-        assertEqual(FiberLoop.main, FiberLoop.current)
+        expect(tested == true)
+        expect(FiberLoop.main == FiberLoop.current)
     }
 
     func testLoopRunDeadline() {
@@ -60,24 +60,27 @@ class FiberLoopTests: TestCase {
         }
 
         FiberLoop.current.run()
-        assertTrue(wokeUp)
-        assertEqual(state, .expired)
+        expect(wokeUp == true)
+        expect(state == .expired)
     }
 
     func testPollDeadline() {
         var pollError: PollError? = nil
+
         fiber {
             do {
                 let descriptor = Descriptor(rawValue: 0)!
-                try FiberLoop.current
-                    .wait(for: descriptor, event: .read, deadline: .now)
+                try FiberLoop.current.wait(
+                    for: descriptor,
+                    event: .read,
+                    deadline: .now)
             } catch {
                 pollError = error as? PollError
             }
         }
 
         FiberLoop.current.run()
-        assertEqual(pollError, .timeout)
+        expect(pollError == .timeout)
     }
 
     func testYieldDefersInTheSameCycle() {
@@ -88,8 +91,8 @@ class FiberLoopTests: TestCase {
             let time = FiberLoop.main.now
             // suspend
             yield()
-            // test if the loop time is the same
-            assertEqual(FiberLoop.main.now, time)
+            // loop time shouldn't change between yields
+            expect(FiberLoop.main.now == time)
         }
         FiberLoop.main.run()
     }

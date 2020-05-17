@@ -8,15 +8,15 @@ class FiberTests: TestCase {
         fiber {
             a = 1
             yield()
-            assertEqual(a, 2)
+            expect(a == 2)
             a = 3
         }
 
         fiber {
-            assertEqual(a, 1)
+            expect(a == 1)
             a = 2
             yield()
-            assertEqual(a, 3)
+            expect(a == 3)
         }
 
         FiberLoop.current.run()
@@ -47,6 +47,6 @@ class FiberTests: TestCase {
         }
 
         FiberLoop.current.run()
-        assertTrue(released)
+        expect(released == true)
     }
 }

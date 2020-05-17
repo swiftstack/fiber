@@ -9,14 +9,14 @@ class ChannelTests: TestCase {
 
         fiber {
             guard let value = channel.read() else {
-                fail()
+                fail("channel.read() failed")
                 return
             }
-            assertEqual(value, 42)
+            expect(value == 42)
         }
 
         fiber {
-            assertTrue(channel.write(42))
+            expect(channel.write(42) == true)
         }
 
         FiberLoop.current.run()
@@ -26,26 +26,26 @@ class ChannelTests: TestCase {
         let channel = Channel<Int>()
 
         channel.close()
-        assertFalse(channel.write(42))
-        assertNil(channel.read())
+        expect(channel.write(42) == false)
+        expect(channel.read() == nil)
     }
 
     func testChannelHasReader() {
         let channel = Channel<Int>()
 
         fiber {
-            assertFalse(channel.hasReaders)
+            expect(!channel.hasReaders)
             _ = channel.read()
-            assertFalse(channel.hasReaders)
-            assertEqual(channel.queue.count, 0)
+            expect(!channel.hasReaders)
+            expect(channel.queue.count == 0)
         }
 
         fiber {
-            assertTrue(channel.hasReaders)
-            assertEqual(channel.queue.count, 0)
+            expect(channel.hasReaders)
+            expect(channel.queue.count == 0)
             channel.write(42)
-            assertFalse(channel.hasReaders)
-            assertEqual(channel.queue.count, 1)
+            expect(!channel.hasReaders)
+            expect(channel.queue.count == 1)
         }
 
         FiberLoop.current.run()
@@ -55,15 +55,15 @@ class ChannelTests: TestCase {
         let channel = Channel<Int>()
 
         fiber {
-            assertFalse(channel.hasWriters)
+            expect(!channel.hasWriters)
             channel.write(42)
-            assertFalse(channel.hasWriters)
+            expect(!channel.hasWriters)
         }
 
         fiber {
-            assertTrue(channel.hasWriters)
+            expect(channel.hasWriters)
             _ = channel.read()
-            assertFalse(channel.hasWriters)
+            expect(!channel.hasWriters)
         }
 
         FiberLoop.current.run()
@@ -73,9 +73,9 @@ class ChannelTests: TestCase {
         let channel = Channel<Int>()
 
         fiber {
-            assertTrue(channel.isEmpty)
-            assertFalse(channel.canWrite)
-            assertFalse(channel.canRead)
+            expect(channel.isEmpty)
+            expect(!channel.canWrite)
+            expect(!channel.canRead)
         }
 
         FiberLoop.current.run()
@@ -85,17 +85,17 @@ class ChannelTests: TestCase {
         let channel = Channel<Int>(capacity: 1)
 
         fiber {
-            assertTrue(channel.isEmpty)
-            assertTrue(channel.canWrite)
-            assertFalse(channel.canRead)
+            expect(channel.isEmpty)
+            expect(channel.canWrite)
+            expect(!channel.canRead)
             channel.write(1)
-            assertFalse(channel.isEmpty)
-            assertFalse(channel.canWrite)
-            assertTrue(channel.canRead)
+            expect(!channel.isEmpty)
+            expect(!channel.canWrite)
+            expect(channel.canRead)
             _ = channel.read()
-            assertTrue(channel.isEmpty)
-            assertTrue(channel.canWrite)
-            assertFalse(channel.canRead)
+            expect(channel.isEmpty)
+            expect(channel.canWrite)
+            expect(!channel.canRead)
         }
 
         FiberLoop.current.run()
@@ -111,7 +111,7 @@ class ChannelTests: TestCase {
             channel.close()
         }
 
-        assertTrue(channel.isEmpty)
+        expect(channel.isEmpty)
         FiberLoop.current.run()
     }
 
@@ -131,8 +131,8 @@ class ChannelTests: TestCase {
         }
 
         FiberLoop.current.run()
-        assertTrue(channel.isEmpty)
-        assertEqual(first, 0)
+        expect(channel.isEmpty)
+        expect(first == 0)
     }
 
     func testChannelCloseHasWaitingReader() {
@@ -148,7 +148,7 @@ class ChannelTests: TestCase {
         }
 
         FiberLoop.current.run()
-        assertNil(result)
+        expect(result == nil)
     }
 
     func testChannelCloseHasWaitingWriter() {
@@ -164,6 +164,6 @@ class ChannelTests: TestCase {
         }
 
         FiberLoop.current.run()
-        assertFalse(result)
+        expect(result == false)
     }
 }
