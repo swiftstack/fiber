@@ -4,27 +4,17 @@ import PackageDescription
 let package = Package(
     name: "Fiber",
     products: [
-        .library(name: "Fiber", targets: ["Fiber"])
+        .library(
+            name: "Fiber",
+            targets: ["Fiber"])
     ],
     dependencies: [
-        .package(
-            url: "https://github.com/swift-stack/platform.git",
-            .branch("master")),
-        .package(
-            url: "https://github.com/swift-stack/linked-list.git",
-            .branch("master")),
-        .package(
-            url: "https://github.com/swift-stack/async.git",
-            .branch("master")),
-        .package(
-            url: "https://github.com/swift-stack/time.git",
-            .branch("master")),
-        .package(
-            url: "https://github.com/swift-stack/log.git",
-            .branch("master")),
-        .package(
-            url: "https://github.com/swift-stack/test.git",
-            .branch("master"))
+        .package(name: "Platform"),
+        .package(name: "Async"),
+        .package(name: "Structures"),
+        .package(name: "Time"),
+        .package(name: "Log"),
+        .package(name: "Test")
     ],
     targets: [
         .target(name: "CCoro"),
@@ -32,13 +22,15 @@ let package = Package(
             name: "Fiber",
             dependencies: [
                 "CCoro",
-                "LinkedList",
                 "Platform",
+                .product(name: "LinkedList", package: "Structures"),
                 "Async",
                 "Time",
                 "Log"
             ]),
-        .testTarget(name: "FiberTests", dependencies: ["Fiber", "Test"]),
+        .testTarget(
+            name: "FiberTests",
+            dependencies: ["Fiber", "Test"]),
     ]
 )
 
@@ -46,3 +38,49 @@ let package = Package(
 package.targets.append(.target(name: "CEpoll"))
 package.targets[1].dependencies.append("CEpoll")
 #endif
+
+// MARK: - custom package source
+
+#if canImport(ObjectiveC)
+import Darwin.C
+#else
+import Glibc
+#endif
+
+extension Package.Dependency {
+    enum Source: String {
+        case local, remote, github
+
+        static var `default`: Self { .local }
+
+        var baseUrl: String {
+            switch self {
+            case .local: return "../"
+            case .remote: return "https://swiftstack.io/"
+            case .github: return "https://github.com/swift-stack/"
+            }
+        }
+
+        func url(for name: String) -> String {
+            return self == .local
+                ? baseUrl + name.lowercased()
+                : baseUrl + name.lowercased() + ".git"
+        }
+    }
+
+    static func package(name: String) -> Package.Dependency {
+        guard let pointer = getenv("SWIFTSTACK") else {
+            return .package(name: name, source: .default)
+        }
+        guard let source = Source(rawValue: String(cString: pointer)) else {
+            fatalError("Invalid source. Use local, remote or github")
+        }
+        return .package(name: name, source: source)
+    }
+
+    static func package(name: String, source: Source) -> Package.Dependency {
+        return source == .local
+            ? .package(name: name, path: source.url(for: name))
+            : .package(name: name, url: source.url(for: name), .branch("dev"))
+    }
+}
