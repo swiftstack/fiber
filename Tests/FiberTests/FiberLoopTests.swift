@@ -7,15 +7,15 @@ import Dispatch
 class FiberLoopTests: TestCase {
     func testEventLoop() {
         let loop = FiberLoop()
-        expect(loop is FiberLoop)
+        expect((loop as Any) is FiberLoop)
     }
 
     func testEventLoopMain() {
-        expect(FiberLoop.main is FiberLoop)
+        expect((FiberLoop.main as Any) is FiberLoop)
     }
 
     func testEventLoopCurrent() {
-        expect(FiberLoop.current is FiberLoop)
+        expect((FiberLoop.current as Any) is FiberLoop)
         expect(FiberLoop.main == FiberLoop.current)
     }
 
