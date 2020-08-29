@@ -1,7 +1,6 @@
 #if os(Linux)
 
 import Time
-import Async
 import CEpoll
 import Platform
 

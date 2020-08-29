@@ -1,5 +1,3 @@
-import Async
-
 public class FiberScheduler {
     private var fibers = [UnsafeMutablePointer<Fiber>]()
     private var scheduler: UnsafeMutablePointer<Fiber>
@@ -28,7 +26,7 @@ public class FiberScheduler {
         return ready.count > 0
     }
 
-    public func async(_ task: @escaping AsyncTask) {
+    public func async(_ task: @escaping Fiber.Task) {
         let fiber: UnsafeMutablePointer<Fiber>
 
         if let cached = cache.popLast() {

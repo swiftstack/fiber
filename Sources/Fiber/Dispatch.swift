@@ -1,12 +1,11 @@
 import Time
-import Async
 import Platform
 import Dispatch
 
 extension FiberLoop {
     enum Result<T> {
         case success(T)
-        case error(Error)
+        case error(Swift.Error)
     }
 
     public func syncTask<T>(
@@ -18,7 +17,7 @@ extension FiberLoop {
         let fd = try pipe()
 
         guard try wait(for: fd.1, event: .write, deadline: deadline) == .ready
-        else { throw AsyncError.taskCanceled }
+        else { throw Error.canceled }
 
         var result: Result<T>? = nil
 
@@ -40,12 +39,12 @@ extension FiberLoop {
         }
 
         guard try wait(for: fd.0, event: .read, deadline: deadline) == .ready
-        else { throw AsyncError.taskCanceled }
+        else { throw Error.canceled }
 
         switch result {
         case .some(.success(let result)): return result
         case .some(.error(let error)): throw error
-        default: throw AsyncError.taskCanceled
+        default: throw Error.canceled
         }
     }
 

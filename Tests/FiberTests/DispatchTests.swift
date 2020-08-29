@@ -35,7 +35,7 @@ class DispatchTests: TestCase {
     }
 
     func testDispatchThrow() {
-        struct TestError: Error, Equatable {
+        struct TestError: Swift.Error, Equatable {
             let code: Int
         }
         var testError: TestError? = nil

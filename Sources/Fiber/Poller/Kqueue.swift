@@ -1,7 +1,6 @@
 #if os(macOS) || os(iOS)
 
 import Time
-import Async
 import Platform
 
 typealias Poller = Kqueue

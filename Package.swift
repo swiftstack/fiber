@@ -10,7 +10,6 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "Platform"),
-        .package(name: "Async"),
         .package(name: "Structures"),
         .package(name: "Time"),
         .package(name: "Log"),
@@ -24,7 +23,6 @@ let package = Package(
                 "CCoro",
                 "Platform",
                 .product(name: "LinkedList", package: "Structures"),
-                "Async",
                 "Time",
                 "Log"
             ]),

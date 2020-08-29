@@ -1,11 +1,10 @@
 import Time
-import Async
 
 import struct Dispatch.DispatchQoS
 import class Dispatch.DispatchQueue
 
 @inline(__always)
-public func fiber(_ task: @escaping AsyncTask) {
+public func fiber(_ task: @escaping Fiber.Task) {
     FiberLoop.current.scheduler.async(task)
 }
 

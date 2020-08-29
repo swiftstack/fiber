@@ -1,7 +1,5 @@
-import Platform
-
-public enum PollError: Error {
-    case alreadyInUse
-    case doesNotExist
+public enum Error: Swift.Error {
+    case canceled
     case timeout
+    case descriptorAlreadyInUse
 }

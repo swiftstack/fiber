@@ -1,6 +1,5 @@
 import Log
 import Time
-import Async
 import Platform
 import ListEntry
 
@@ -183,7 +182,7 @@ public class FiberLoop {
         scheduler.suspend()
         removeWatcher(for: socket, event: event)
         if currentFiber.pointee.state == .expired {
-            throw PollError.timeout
+            throw Error.timeout
         }
         return currentFiber.pointee.state
     }
@@ -198,12 +197,12 @@ public class FiberLoop {
         switch event {
         case .read:
             guard watchers[fd].read == nil else {
-                throw PollError.alreadyInUse
+                throw Error.descriptorAlreadyInUse
             }
             watchers[fd].read = currentFiber
         case .write:
             guard watchers[fd].write == nil else {
-                throw PollError.alreadyInUse
+                throw  Error.descriptorAlreadyInUse
             }
             watchers[fd].write = currentFiber
         }

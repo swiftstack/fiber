@@ -65,7 +65,7 @@ class FiberLoopTests: TestCase {
     }
 
     func testPollDeadline() {
-        var pollError: PollError? = nil
+        var result: Error? = nil
 
         fiber {
             do {
@@ -75,12 +75,12 @@ class FiberLoopTests: TestCase {
                     event: .read,
                     deadline: .now)
             } catch {
-                pollError = error as? PollError
+                result = error as? Error
             }
         }
 
         FiberLoop.current.run()
-        expect(pollError == .timeout)
+        expect(result == .timeout)
     }
 
     func testYieldDefersInTheSameCycle() {

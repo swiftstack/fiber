@@ -1,6 +1,9 @@
 import Time
-import Async
 import Platform
+
+public enum IOEvent {
+    case read, write
+}
 
 protocol PollerProtocol {
     var descriptor: Descriptor { get }

@@ -1,6 +1,5 @@
 import Log
 import Time
-import Async
 import CCoro
 import ListEntry
 
@@ -8,6 +7,8 @@ typealias Context = coro_context
 typealias WatcherEntry = ListEntry<UnsafeMutablePointer<Fiber>>
 
 public struct Fiber {
+    public typealias Task = () -> Void
+
     public enum State {
         case none, sleep, ready, canceled, expired, cached
     }
@@ -17,7 +18,7 @@ public struct Fiber {
     var stack: Stack?
     var context = Context()
 
-    var task: AsyncTask?
+    var task: Task?
 
     var caller: UnsafeMutablePointer<Fiber>?
 
