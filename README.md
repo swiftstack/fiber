@@ -12,13 +12,13 @@ Cooperative multitasking written in swift with only [one exception](https://gith
 
 You can find this code and more in [examples](https://github.com/swift-stack/examples).
 
-### Real World Example (using [Async](https://github.com/swift-stack/async) abstraction)
+### Real World Example (using [AIO](https://github.com/swift-stack/aio))
 
 As you can see, no callback hell:
 ```swift
-async.use(Fiber.self)
+import Network
 
-async.task {
+async {
     let service = client.connect("http://election.online")
     service.login(using: cookies)
     guard service.vote(for: "Thor") == .success else {
@@ -28,7 +28,7 @@ async.task {
     service.logout()
 }
 
-async.loop.run()
+loop.run()
 ```
 
 ### Transfer execution
