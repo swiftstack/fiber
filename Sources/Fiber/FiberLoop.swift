@@ -1,7 +1,10 @@
 import Log
 import Time
+import Event
 import Platform
 import ListEntry
+
+@_exported import enum Event.IOEvent
 
 extension FiberLoop {
     struct Watchers {

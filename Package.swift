@@ -16,12 +16,20 @@ let package = Package(
         .package(name: "Test")
     ],
     targets: [
-        .target(name: "CCoro"),
+        .target(
+            name: "CCoro"),
+        .target(
+            name: "Event",
+            dependencies: [
+                "Platform",
+                "Time"
+            ]),
         .target(
             name: "Fiber",
             dependencies: [
                 "CCoro",
                 "Platform",
+                "Event",
                 .product(name: "LinkedList", package: "Structures"),
                 "Time",
                 "Log"
@@ -34,7 +42,7 @@ let package = Package(
 
 #if os(Linux)
 package.targets.append(.target(name: "CEpoll"))
-package.targets[1].dependencies.append("CEpoll")
+package.targets[2].dependencies.append("CEpoll")
 #endif
 
 // MARK: - custom package source

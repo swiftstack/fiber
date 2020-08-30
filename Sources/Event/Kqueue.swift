@@ -3,11 +3,11 @@
 import Time
 import Platform
 
-typealias Poller = Kqueue
-typealias Event = kevent
+public typealias Poller = Kqueue
+public typealias Event = kevent
 
 extension Descriptor {
-    static var maxLimit: Int {
+    public static var maxLimit: Int {
         return Int(OPEN_MAX)
     }
 }
@@ -37,16 +37,20 @@ extension Event {
             udata: nil)
     }
 
-    var descriptor: Descriptor {
+    public var descriptor: Descriptor {
         return Descriptor(rawValue: Int32(self.ident))!
     }
 }
 
-struct TypeOptions: OptionSet {
-    let rawValue: Int16
+public struct TypeOptions: OptionSet {
+    public let rawValue: Int16
 
-    static let read = TypeOptions(rawValue: Int16(EVFILT_READ))
-    static let write = TypeOptions(rawValue: Int16(EVFILT_WRITE))
+    public init(rawValue: Int16) {
+        self.rawValue = rawValue
+    }
+
+    public static let read = TypeOptions(rawValue: Int16(EVFILT_READ))
+    public static let write = TypeOptions(rawValue: Int16(EVFILT_WRITE))
 }
 
 fileprivate struct FlagOptions: OptionSet  {
@@ -61,7 +65,7 @@ fileprivate struct FlagOptions: OptionSet  {
 }
 
 extension Event {
-    var typeOptions: TypeOptions {
+    public var typeOptions: TypeOptions {
         return TypeOptions(rawValue: self.filter)
     }
 
@@ -69,7 +73,7 @@ extension Event {
         return FlagOptions(rawValue: self.flags)
     }
 
-    var isError: Bool {
+    public var isError: Bool {
         return flagOptions.contains(.error)
     }
 
@@ -78,14 +82,14 @@ extension Event {
     }
 }
 
-struct Kqueue: PollerProtocol {
+public struct Kqueue: PollerProtocol {
     var descriptor: Descriptor
     var events: [Event]
     var changes: [Event]
 
     var pollSize = 256
 
-    init() {
+    public init() {
         let fd = kqueue()
         guard var descriptor = Descriptor(rawValue: fd) else {
             fatalError("kqueue init failed")
@@ -97,7 +101,7 @@ struct Kqueue: PollerProtocol {
         self.changes = [Event]()
     }
 
-    mutating func poll(deadline: Time?) throws -> ArraySlice<Event> {
+    public mutating func poll(deadline: Time?) throws -> ArraySlice<Event> {
         var count: Int32 = -1
 
         while count < 0 {
@@ -127,7 +131,7 @@ struct Kqueue: PollerProtocol {
         return events.prefix(upTo: Int(count))
     }
 
-    mutating func add(socket: Descriptor, event: IOEvent) {
+    public mutating func add(socket: Descriptor, event: IOEvent) {
         let change = Event(descriptor: socket, type: event, action: .add)
         changes.append(change)
     }
@@ -142,7 +146,7 @@ struct Kqueue: PollerProtocol {
     // until we need extended lifetime for event filter (why would we need that)
     // EV_ONESHOT works just fine.
     //
-    mutating func remove(socket: Descriptor, event: IOEvent) {
+    public mutating func remove(socket: Descriptor, event: IOEvent) {
         //let change = Event(descriptor: socket, type: event, action: .delete)
         //changes.append(change)
     }
