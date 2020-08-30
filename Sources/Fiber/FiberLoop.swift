@@ -223,7 +223,6 @@ public class FiberLoop {
         }
 
         removeWatcher()
-        poller.remove(socket: descriptor, event: event)
     }
 
     func insertWatcher(deadline: Time) {

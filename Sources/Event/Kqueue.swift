@@ -25,7 +25,7 @@ extension Event {
         }
         let flags: Int32
         switch action {
-        case .add: flags = EV_ADD | EV_ONESHOT
+        case .add: flags = EV_ADD | EV_CLEAR
         case .delete: flags = EV_DELETE
         }
         self.init(
@@ -136,19 +136,9 @@ public struct Kqueue: PollerProtocol {
         changes.append(change)
     }
 
-    // Use EV_ONESHOT because if descriptor was closed before we remove a filter
-    // kqueue throws an error on batch change and ignore next 'add filter' event
-    // so we either should call kevent with 'delete filter' here directrly
-    // or use built-in kernel option.
-    //
-    // TODO: try to make it work
-    // issue found in examples/socket-example: hangs on second loop iteration
-    // until we need extended lifetime for event filter (why would we need that)
-    // EV_ONESHOT works just fine.
-    //
     public mutating func remove(socket: Descriptor, event: IOEvent) {
-        //let change = Event(descriptor: socket, type: event, action: .delete)
-        //changes.append(change)
+        let change = Event(descriptor: socket, type: event, action: .delete)
+        changes.append(change)
     }
 }
 

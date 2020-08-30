@@ -1,6 +1,8 @@
 import Time
 import Platform
 
+// Converts deadline to timeout in seconds expected by epoll/kqueue
+
 extension Time {
 #if os(macOS) || os(iOS)
     var kqueueMaximumTimeout: Time.Duration {
