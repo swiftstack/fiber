@@ -27,7 +27,7 @@ class BroadcastTests: TestCase {
             expect(broadcast.dispatch(42) == true)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
 
         expect(broadcast.subscribers.count == 0)
     }

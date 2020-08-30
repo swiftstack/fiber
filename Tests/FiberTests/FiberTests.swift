@@ -10,6 +10,9 @@ class FiberTests: TestCase {
             yield()
             expect(a == 2)
             a = 3
+            yield()
+            expect(a == 4)
+            a = 5
         }
 
         fiber {
@@ -17,9 +20,13 @@ class FiberTests: TestCase {
             a = 2
             yield()
             expect(a == 3)
+            a = 4
+            yield()
+            expect(a == 5)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
+        expect(a == 5)
     }
 
     func testLifeTimeScope() {
@@ -46,7 +53,7 @@ class FiberTests: TestCase {
             }
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
         expect(released == true)
     }
 }

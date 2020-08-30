@@ -5,16 +5,16 @@ import Dispatch
 @testable import Fiber
 
 class FiberLoopTests: TestCase {
-    func testEventLoop() {
+    func testFiberLoop() {
         let loop = FiberLoop()
         expect((loop as Any) is FiberLoop)
     }
 
-    func testEventLoopMain() {
+    func testFiberLoopMain() {
         expect((FiberLoop.main as Any) is FiberLoop)
     }
 
-    func testEventLoopCurrent() {
+    func testFiberLoopCurrent() {
         expect((FiberLoop.current as Any) is FiberLoop)
         expect(FiberLoop.main == FiberLoop.current)
     }
@@ -31,7 +31,7 @@ class FiberLoopTests: TestCase {
         expect(tested == true)
     }
 
-    func testFiberLoop() {
+    func testFiberLoops() {
         var tested = false
         let semaphore = DispatchSemaphore(value: 0)
         let main = FiberLoop.current
@@ -54,8 +54,7 @@ class FiberLoopTests: TestCase {
         var wokeUp = false
         var state: Fiber.State = .none
         fiber {
-            sleep(until: .now - 1.s)
-            state = FiberLoop.current.scheduler.running.pointee.state
+            state = sleep(until: .now - 1.s)
             wokeUp = true
         }
 
@@ -65,7 +64,7 @@ class FiberLoopTests: TestCase {
     }
 
     func testPollDeadline() {
-        var result: Error? = nil
+        var result: FiberLoop.Error? = nil
 
         fiber {
             do {
@@ -75,7 +74,7 @@ class FiberLoopTests: TestCase {
                     event: .read,
                     deadline: .now)
             } catch {
-                result = error as? Error
+                result = error as? FiberLoop.Error
             }
         }
 

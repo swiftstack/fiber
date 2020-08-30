@@ -6,13 +6,13 @@ public final class Broadcast<T> {
 
     @usableFromInline
     var this: UnsafeMutablePointer<Fiber> {
-        return FiberLoop.current.scheduler.running
+        return Scheduler.current.running
     }
 
     @usableFromInline
     @inline(__always)
     func schedule(_ fiber: UnsafeMutablePointer<Fiber>) {
-        FiberLoop.current.scheduler.schedule(fiber: fiber, state: .ready)
+        Scheduler.current.schedule(fiber: fiber, state: .ready)
     }
 
     public func wait() -> T? {

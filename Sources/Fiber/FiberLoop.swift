@@ -6,28 +6,20 @@ import ListEntry
 
 @_exported import enum Event.IOEvent
 
-extension FiberLoop {
-    struct Watchers {
-        var read: UnsafeMutablePointer<Fiber>?
-        var write: UnsafeMutablePointer<Fiber>?
-    }
-}
-
-extension FiberLoop.Watchers {
-    var isActive: Bool {
-        @inline(__always) get {
-            return read != nil || write != nil
-        }
-    }
-}
-
 public class FiberLoop {
     var poller = Poller()
     var watchers: UnsafeMutableBufferPointer<Watchers>
-    var activeWatchers: UnsafeMutablePointer<WatcherEntry>
+    var sleeping: UnsafeMutablePointer<WatcherEntry>
+
+    struct Watchers {
+        var read: UnsafeMutablePointer<Fiber>?
+        var write: UnsafeMutablePointer<Fiber>?
+
+        var isEmpty: Bool { read == nil && write == nil }
+    }
 
     @usableFromInline
-    var scheduler = FiberScheduler()
+    var scheduler = Scheduler.current
 
     var currentFiber: UnsafeMutablePointer<Fiber> {
         @inline (__always) get {
@@ -49,8 +41,8 @@ public class FiberLoop {
         if scheduler.hasReady {
             return now
         }
-        assert(!activeWatchers.isEmpty)
-        return activeWatchers.first!.pointee.payload.pointee.deadline
+        assert(!sleeping.isEmpty)
+        return sleeping.first!.pointee.payload.pointee.deadline
     }
 
     public init() {
@@ -58,13 +50,13 @@ public class FiberLoop {
             repeating: Watchers(),
             count: Descriptor.maxLimit)
 
-        activeWatchers = UnsafeMutablePointer.allocate(
+        sleeping = UnsafeMutablePointer.allocate(
             payload: scheduler.running)
     }
 
     deinit {
         watchers.deallocate()
-        activeWatchers.deallocate()
+        sleeping.deallocate()
     }
 
     var readyCount = 0
@@ -91,7 +83,7 @@ public class FiberLoop {
                     break
                 }
 
-                guard activeWatchers.count > 0 || scheduler.hasReady else {
+                guard sleeping.count > 0 || scheduler.hasReady else {
                     #if DEBUG_FIBER
                     Log.debug("No fiber to schedule, shutting down.")
                     #endif
@@ -121,38 +113,29 @@ public class FiberLoop {
     }
 
     func wakeupSuspended() {
-        for watcher in activeWatchers.pointee {
+        for watcher in sleeping.pointee {
             scheduler.schedule(fiber: watcher.pointee.payload, state: .canceled)
         }
     }
 
     func scheduleReady(_ events: ArraySlice<Event>) {
         for event in events {
-            let index = Int(event.descriptor.rawValue)
+            let pair = watchers[event.descriptor]
 
-            guard watchers[index].isActive else {
-                // kqueue error on closed descriptor
-                if event.isError {
-                    Log.error("event error: \(SystemError())")
-                    return
-                }
-                fatalError("defunct descriptor \(event.descriptor)")
-            }
+            guard !pair.isEmpty else { continue }
 
-            if event.typeOptions.contains(.read),
-                let fiber = watchers[index].read {
+            if event.typeOptions.contains(.read), let fiber = pair.read {
                 scheduler.schedule(fiber: fiber, state: .ready)
             }
 
-            if event.typeOptions.contains(.write),
-                let fiber = watchers[index].write {
+            if event.typeOptions.contains(.write), let fiber = pair.write {
                 scheduler.schedule(fiber: fiber, state: .ready)
             }
         }
     }
 
     func scheduleExpired() {
-        for watcher in activeWatchers.pointee {
+        for watcher in sleeping.pointee {
             let fiber = watcher.pointee.payload
             guard fiber.pointee.deadline <= now else {
                 break
@@ -195,19 +178,17 @@ public class FiberLoop {
         event: IOEvent,
         deadline: Time
     ) throws {
-        let fd = Int(descriptor.rawValue)
-
         switch event {
         case .read:
-            guard watchers[fd].read == nil else {
+            guard watchers[descriptor].read == nil else {
                 throw Error.descriptorAlreadyInUse
             }
-            watchers[fd].read = currentFiber
+            watchers[descriptor].read = currentFiber
         case .write:
-            guard watchers[fd].write == nil else {
+            guard watchers[descriptor].write == nil else {
                 throw  Error.descriptorAlreadyInUse
             }
-            watchers[fd].write = currentFiber
+            watchers[descriptor].write = currentFiber
         }
 
         insertWatcher(deadline: deadline)
@@ -215,25 +196,22 @@ public class FiberLoop {
     }
 
     func removeWatcher(for descriptor: Descriptor, event: IOEvent) {
-        let fd = Int(descriptor.rawValue)
-
         switch event {
-        case .read: watchers[fd].read = nil
-        case .write: watchers[fd].write = nil
+        case .read: watchers[descriptor].read = nil
+        case .write: watchers[descriptor].write = nil
         }
-
         removeWatcher()
     }
 
     func insertWatcher(deadline: Time) {
         currentFiber.pointee.deadline = deadline
-        if activeWatchers.isEmpty || deadline >= activeWatchers.maxDeadline! {
-            activeWatchers.append(currentFiber.pointee.watcherEntry)
-        } else if deadline < activeWatchers.minDeadline! {
-            activeWatchers.insert(currentFiber.pointee.watcherEntry)
+        if sleeping.isEmpty || deadline >= sleeping.maxDeadline! {
+            sleeping.append(currentFiber.pointee.watcherEntry)
+        } else if deadline < sleeping.minDeadline! {
+            sleeping.insert(currentFiber.pointee.watcherEntry)
         } else {
-            for watcher in activeWatchers.pointee {
-                if deadline < watcher.pointee.payload.pointee.deadline {
+            for watcher in sleeping.pointee {
+                if deadline < watcher.deadline {
                     watcher.insert(currentFiber.pointee.watcherEntry)
                     return
                 }
@@ -250,9 +228,15 @@ public class FiberLoop {
 extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
     typealias Watchers = FiberLoop.Watchers
 
+    subscript(_ descriptor: Descriptor) -> Watchers{
+        get { self[Int(descriptor.rawValue)] }
+        set { self[Int(descriptor.rawValue)] = newValue }
+    }
+
     static func allocate(
-        repeating element: Watchers, count: Int
-    ) -> UnsafeMutableBufferPointer<Watchers> {
+        repeating element: Watchers,
+        count: Int) -> UnsafeMutableBufferPointer<Watchers>
+    {
         let pointer = UnsafeMutablePointer<Watchers>.allocate(capacity: count)
         pointer.initialize(repeating: element, count: count)
 
@@ -264,12 +248,16 @@ extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
 
 extension UnsafeMutablePointer
 where Pointee == ListEntry<UnsafeMutablePointer<Fiber>> {
+    var deadline: Time {
+        pointee.payload.pointee.deadline
+    }
+
     var minDeadline: Time? {
-        return first?.payload.pointee.deadline
+        first?.payload.pointee.deadline
     }
 
     var maxDeadline: Time? {
-        return last?.payload.pointee.deadline
+        last?.payload.pointee.deadline
     }
 }
 

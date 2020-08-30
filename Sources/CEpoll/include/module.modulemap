@@ -1,4 +1,0 @@
-module CEpoll {
-    header "epoll.h"
-    export *
-}

@@ -1,7 +1,17 @@
-public class FiberScheduler {
+import Platform
+
+public class Scheduler {
     private var fibers = [UnsafeMutablePointer<Fiber>]()
     private var scheduler: UnsafeMutablePointer<Fiber>
     private(set) var running: UnsafeMutablePointer<Fiber>
+
+    public private(set) static var main = Scheduler()
+    private static var _current = ThreadSpecific<Scheduler>()
+    public class var current: Scheduler {
+        Thread.isMain
+            ? main
+            : Scheduler._current.get() { Scheduler() }
+    }
 
     init() {
         scheduler = UnsafeMutablePointer<Fiber>.allocate(capacity: 1)
@@ -109,5 +119,11 @@ public class FiberScheduler {
 
         ready.removeAll(keepingCapacity: true)
         call(fiber: first)
+    }
+
+    public func loop() {
+        while hasReady {
+            runReadyChain()
+        }
     }
 }

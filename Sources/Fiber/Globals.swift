@@ -5,13 +5,13 @@ import class Dispatch.DispatchQueue
 
 @inline(__always)
 public func fiber(_ task: @escaping Fiber.Task) {
-    FiberLoop.current.scheduler.async(task)
+    Scheduler.current.async(task)
 }
 
 @inline(__always)
 @discardableResult
 public func yield() -> Fiber.State {
-    return FiberLoop.current.scheduler.yield()
+    return Scheduler.current.yield()
 }
 
 @inline(__always)

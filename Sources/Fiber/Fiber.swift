@@ -43,7 +43,7 @@ public struct Fiber {
         self.stack = Stack.allocate()
 
         coro_create(&context, { _ in
-            FiberLoop.current.scheduler.lifecycle()
+            Scheduler.current.lifecycle()
         }, nil, stack!.pointer, stack!.size)
     }
 

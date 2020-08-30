@@ -19,7 +19,7 @@ class ChannelTests: TestCase {
             expect(channel.write(42) == true)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelClose() {
@@ -48,7 +48,7 @@ class ChannelTests: TestCase {
             expect(channel.queue.count == 1)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelHasWriter() {
@@ -66,7 +66,7 @@ class ChannelTests: TestCase {
             expect(!channel.hasWriters)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelCapacity0() {
@@ -78,7 +78,7 @@ class ChannelTests: TestCase {
             expect(!channel.canRead)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelCapacity1() {
@@ -98,7 +98,7 @@ class ChannelTests: TestCase {
             expect(!channel.canRead)
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelCloseNoReader() {
@@ -112,7 +112,7 @@ class ChannelTests: TestCase {
         }
 
         expect(channel.isEmpty)
-        FiberLoop.current.run()
+        Scheduler.current.loop()
     }
 
     func testChannelCloseHasReader() {
@@ -130,7 +130,7 @@ class ChannelTests: TestCase {
             channel.close()
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
         expect(channel.isEmpty)
         expect(first == 0)
     }
@@ -147,7 +147,7 @@ class ChannelTests: TestCase {
             channel.close()
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
         expect(result == nil)
     }
 
@@ -163,7 +163,7 @@ class ChannelTests: TestCase {
             channel.close()
         }
 
-        FiberLoop.current.run()
+        Scheduler.current.loop()
         expect(result == false)
     }
 }

@@ -41,8 +41,8 @@ let package = Package(
 )
 
 #if os(Linux)
-package.targets.append(.target(name: "CEpoll"))
-package.targets[2].dependencies.append("CEpoll")
+package.targets.append(.systemLibrary(name: "CEpoll", path: "./Headers/CEpoll"))
+package.targets[1].dependencies.append("CEpoll")
 #endif
 
 // MARK: - custom package source
