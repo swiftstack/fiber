@@ -200,6 +200,8 @@ public class FiberLoop {
         case .read: watchers[descriptor].read = nil
         case .write: watchers[descriptor].write = nil
         }
+        // TODO: investigate & test more
+        poller.remove(socket: descriptor, event: event)
         removeWatcher()
     }
 
