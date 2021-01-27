@@ -250,9 +250,8 @@ asm (
 
 #if CORO_STARTUP
 asm (
-     "\t.globl coro_startup\n"
-     "\t.type coro_startup, %function\n"
-     "coro_startup:\n"
+     "\t.globl _coro_startup\n"
+     "_coro_startup:\n"
 
 #if __ARM_ARCH==7
 
@@ -277,7 +276,7 @@ asm (
      ".cfi_offset 30, -16\n"
      "\tmov x0, x20\n"
      "\tblr x19\n"
-     "\tb abort\n"
+     "\tb _abort\n"
      ".cfi_endproc\n"
 
 #else
