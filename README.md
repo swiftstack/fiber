@@ -1,18 +1,18 @@
 # Fiber
 
-Cooperative multitasking written in swift with only [one exception](https://github.com/swift-stack/fiber/tree/master/Sources/CCoro/coro.c).
+Cooperative multitasking written in swift with only [one exception](https://github.com/swiftstack/fiber/tree/fiber/Sources/CCoro/coro.c).
 
 ## Package.swift
 
 ```swift
-.package(url: "https://github.com/swift-stack/fiber.git", .branch("dev"))
+.package(url: "https://github.com/swiftstack/fiber.git", .branch("fiber"))
 ```
 
 ## Usage
 
-You can find this code and more in [examples](https://github.com/swift-stack/examples).
+You can find this code and more in [examples](https://github.com/swiftstack/examples/tree/fiber).
 
-### Real World Example (using [AIO](https://github.com/swift-stack/aio))
+### Real World Example (using [Network](https://github.com/swiftstack/network))
 
 As you can see, no callback hell:
 ```swift
