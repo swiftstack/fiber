@@ -6,14 +6,14 @@ let package = Package(
     products: [
         .library(
             name: "Fiber",
-            targets: ["Fiber"])
+            targets: ["Fiber"]),
     ],
     dependencies: [
         .package(name: "Platform"),
         .package(name: "Structures"),
         .package(name: "Time"),
         .package(name: "Log"),
-        .package(name: "Test")
+        .package(name: "Test"),
     ],
     targets: [
         .target(
