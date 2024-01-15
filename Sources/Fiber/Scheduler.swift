@@ -10,7 +10,7 @@ public class Scheduler {
     public class var current: Scheduler {
         Thread.isMain
             ? main
-            : Scheduler._current.get() { Scheduler() }
+            : Scheduler._current.get { Scheduler() }
     }
 
     init() {
@@ -98,8 +98,7 @@ public class Scheduler {
     }
 
     @usableFromInline
-    func schedule(fiber: UnsafeMutablePointer<Fiber>, state: Fiber.State)
-    {
+    func schedule(fiber: UnsafeMutablePointer<Fiber>, state: Fiber.State) {
         fiber.pointee.state = state
         ready.append(fiber)
     }

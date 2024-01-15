@@ -118,7 +118,7 @@ class ChannelTests: TestCase {
     func testChannelCloseHasReader() {
         let channel = Channel<Int>(capacity: 10)
 
-        var first: Int? = nil
+        var first: Int?
         fiber {
             first = channel.read()
         }
@@ -138,7 +138,7 @@ class ChannelTests: TestCase {
     func testChannelCloseHasWaitingReader() {
         let channel = Channel<Int>()
 
-        var result: Optional<Int> = 42
+        var result: Int? = 42
         fiber {
             result = channel.read()
         }

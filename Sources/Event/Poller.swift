@@ -20,7 +20,7 @@ extension PollerProtocol {
 }
 
 extension Poller: Equatable {
-    public static func ==(lhs: Poller, rhs: Poller) -> Bool {
+    public static func == (lhs: Poller, rhs: Poller) -> Bool {
         return lhs.descriptor == rhs.descriptor
     }
 }

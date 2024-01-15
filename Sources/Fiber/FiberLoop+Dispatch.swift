@@ -19,7 +19,7 @@ extension FiberLoop {
         guard try wait(for: fd.1, event: .write, deadline: deadline) == .ready
         else { throw Error.canceled }
 
-        var result: Result<T>? = nil
+        var result: Result<T>?
 
         let workItem = DispatchWorkItem(qos: qos) {
             fiber {
@@ -51,9 +51,8 @@ extension FiberLoop {
     fileprivate func pipe() throws -> (Descriptor, Descriptor) {
         var fd: (Int32, Int32) = (0, 0)
         try withUnsafeMutablePointer(to: &fd) { pointer in
-            try pointer.withMemoryRebound(to: Int32.self, capacity: 2)
-            { pointer in
-                guard Platform.pipe(pointer) != -1 else {
+            try pointer.withMemoryRebound(to: Int32.self, capacity: 2) {
+                guard Platform.pipe($0) != -1 else {
                     throw SystemError()
                 }
             }

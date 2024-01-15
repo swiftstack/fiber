@@ -64,7 +64,7 @@ class FiberLoopTests: TestCase {
     }
 
     func testPollDeadline() {
-        var result: FiberLoop.Error? = nil
+        var result: FiberLoop.Error?
 
         fiber {
             do {

@@ -38,7 +38,7 @@ class DispatchTests: TestCase {
         struct TestError: Swift.Error, Equatable {
             let code: Int
         }
-        var testError: TestError? = nil
+        var testError: TestError?
 
         fiber {
             do {

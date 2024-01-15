@@ -53,7 +53,7 @@ public struct TypeOptions: OptionSet {
     public static let write = TypeOptions(rawValue: Int16(EVFILT_WRITE))
 }
 
-fileprivate struct FlagOptions: OptionSet  {
+private struct FlagOptions: OptionSet {
     let rawValue: UInt16
 
     static let add = FlagOptions(rawValue: UInt16(EV_ADD))

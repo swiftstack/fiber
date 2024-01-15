@@ -13,7 +13,7 @@ extension Descriptor {
         guard getrlimit(Int32(RLIMIT_NOFILE.rawValue), &rlim) >= 0 else {
             return 0
         }
-        return Int(rlim.rlim_max);
+        return Int(rlim.rlim_max)
     }
 }
 

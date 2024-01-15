@@ -4,8 +4,6 @@ import Event
 import Platform
 import ListEntry
 
-@_exported import enum Event.IOEvent
-
 public class FiberLoop {
     var poller = Poller()
     var watchers: UnsafeMutableBufferPointer<Watchers>
@@ -32,7 +30,7 @@ public class FiberLoop {
     public class var current: FiberLoop {
         Thread.isMain
             ? main
-            : FiberLoop._current.get() { FiberLoop() }
+            : FiberLoop._current.get { FiberLoop() }
     }
 
     var deadline = Time.distantFuture
@@ -162,8 +160,8 @@ public class FiberLoop {
     public func wait(
         for socket: Descriptor,
         event: IOEvent,
-        deadline: Time) throws -> Fiber.State
-    {
+        deadline: Time
+    ) throws -> Fiber.State {
         try insertWatcher(for: socket, event: event, deadline: deadline)
         scheduler.suspend()
         removeWatcher(for: socket, event: event)
@@ -212,11 +210,9 @@ public class FiberLoop {
         } else if deadline < sleeping.minDeadline! {
             sleeping.insert(currentFiber.pointee.watcherEntry)
         } else {
-            for watcher in sleeping.pointee {
-                if deadline < watcher.deadline {
-                    watcher.insert(currentFiber.pointee.watcherEntry)
-                    return
-                }
+            for watcher in sleeping.pointee where deadline < watcher.deadline {
+                watcher.insert(currentFiber.pointee.watcherEntry)
+                return
             }
             fatalError("unreachable")
         }
@@ -230,15 +226,15 @@ public class FiberLoop {
 extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
     typealias Watchers = FiberLoop.Watchers
 
-    subscript(_ descriptor: Descriptor) -> Watchers{
+    subscript(_ descriptor: Descriptor) -> Watchers {
         get { self[Int(descriptor.rawValue)] }
         set { self[Int(descriptor.rawValue)] = newValue }
     }
 
     static func allocate(
         repeating element: Watchers,
-        count: Int) -> UnsafeMutableBufferPointer<Watchers>
-    {
+        count: Int
+    ) -> UnsafeMutableBufferPointer<Watchers> {
         let pointer = UnsafeMutablePointer<Watchers>.allocate(capacity: count)
         pointer.initialize(repeating: element, count: count)
 
@@ -264,7 +260,7 @@ where Pointee == ListEntry<UnsafeMutablePointer<Fiber>> {
 }
 
 extension FiberLoop: Equatable {
-    public static func ==(lhs: FiberLoop, rhs: FiberLoop) -> Bool {
+    public static func == (lhs: FiberLoop, rhs: FiberLoop) -> Bool {
         return lhs.poller == rhs.poller
     }
 }
