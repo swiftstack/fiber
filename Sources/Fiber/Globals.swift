@@ -1,5 +1,3 @@
-import Time
-
 import struct Dispatch.DispatchQoS
 import class Dispatch.DispatchQueue
 
@@ -22,12 +20,12 @@ public func suspend() -> Fiber.State {
 
 @inline(__always)
 @discardableResult
-public func sleep(until deadline: Time) -> Fiber.State {
+public func sleep(until deadline: Instant) -> Fiber.State {
     return FiberLoop.current.wait(for: deadline)
 }
 
 @inline(__always)
-public func now() -> Time {
+public func now() -> Instant {
     return FiberLoop.current.now
 }
 
@@ -36,7 +34,7 @@ public func now() -> Time {
 public func syncTask<T>(
     onQueue queue: DispatchQueue = DispatchQueue.global(),
     qos: DispatchQoS = .background,
-    deadline: Time = .distantFuture,
+    deadline: Instant = .distantFuture,
     task: @escaping () throws -> T
 ) throws -> T {
     return try FiberLoop.current.syncTask(

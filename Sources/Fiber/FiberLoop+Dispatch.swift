@@ -1,4 +1,3 @@
-import Time
 import Platform
 import Dispatch
 
@@ -11,7 +10,7 @@ extension FiberLoop {
     public func syncTask<T>(
         onQueue queue: DispatchQueue = DispatchQueue.global(),
         qos: DispatchQoS = .background,
-        deadline: Time = .distantFuture,
+        deadline: Instant = .distantFuture,
         task: @escaping () throws -> T
     ) throws -> T {
         let fd = try pipe()

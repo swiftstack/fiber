@@ -1,8 +1,12 @@
-// swift-tools-version:5.2
+// swift-tools-version:6.4
 import PackageDescription
 
 let package = Package(
     name: "Fiber",
+    platforms: [
+        .iOS(.v26),
+        .macOS(.v26),
+    ],
     products: [
         .library(
             name: "Fiber",
@@ -10,33 +14,26 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "Platform"),
+        .package(name: "Event"),
         .package(name: "Structures"),
-        .package(name: "Time"),
-        .package(name: "Log"),
-        .package(name: "Test"),
     ],
     targets: [
         .target(
             name: "CCoro"),
         .target(
-            name: "Event",
-            dependencies: [
-                "Platform",
-                "Time"
-            ]),
-        .target(
             name: "Fiber",
             dependencies: [
                 "CCoro",
-                "Platform",
-                "Event",
+                .product(name: "Platform", package: "Platform"),
+                .product(name: "Event", package: "Event"),
                 .product(name: "LinkedList", package: "Structures"),
-                "Time",
-                "Log"
+            ],
+            swiftSettings: [
+                .treatWarning("EmbeddedRestrictions", as: .error)
             ]),
         .testTarget(
             name: "FiberTests",
-            dependencies: ["Fiber", "Test"]),
+            dependencies: ["Fiber"]),
     ]
 )
 
@@ -87,6 +84,6 @@ extension Package.Dependency {
     static func package(name: String, source: Source) -> Package.Dependency {
         return source == .local
             ? .package(name: name, path: source.url(for: name))
-            : .package(name: name, url: source.url(for: name), .branch("fiber"))
+            : .package(url: source.url(for: name), branch: "dev")
     }
 }

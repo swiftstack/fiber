@@ -1,35 +1,14 @@
 # Fiber
 
-Cooperative multitasking written in swift with only [one exception](https://github.com/swiftstack/fiber/tree/fiber/Sources/CCoro/coro.c).
+Cooperative multitasking written in swift with only [one exception](https://github.com/swiftstack/fiber/tree/dev/Sources/CCoro/coro.c).
 
 ## Package.swift
 
 ```swift
-.package(url: "https://github.com/swiftstack/fiber.git", .branch("fiber"))
+.package(url: "https://github.com/swiftstack/fiber.git", .branch("dev"))
 ```
 
 ## Usage
-
-You can find this code and more in [examples](https://github.com/swiftstack/examples/tree/fiber).
-
-### Real World Example (using [Network](https://github.com/swiftstack/network))
-
-As you can see, no callback hell:
-```swift
-import Network
-
-async {
-    let service = client.connect("http://election.online")
-    service.login(using: cookies)
-    guard service.vote(for: "Thor") == .success else {
-        fatalError("we're doomed")
-    }
-    service.syscall(.coverMyTracks)
-    service.logout()
-}
-
-loop.run()
-```
 
 ### Transfer execution
 
@@ -88,14 +67,14 @@ import Time
 
 fiber {
     fiber {
-        sleep(until: .now + 2.ms)
+        sleep(until: .now.advanced(by: .milliseconds(2)))
         print("fiber 2 woke up")
     }
-    sleep(until: .now + 1.ms)
+    sleep(until: .now.advanced(by: .milliseconds(1)))
     print("fiber 1 woke up")
 }
 
-FiberLoop.main.run(until: .now + 5.ms)
+FiberLoop.main.run(until: .now.advanced(by: .milliseconds(5)))
 
 // fiber 1 woke up
 // fiber 2 woke up

@@ -1,10 +1,8 @@
-import Log
-import Time
 import Event
 import Platform
 import ListEntry
 
-public class FiberLoop {
+public final class FiberLoop {
     var poller = Poller()
     var watchers: UnsafeMutableBufferPointer<Watchers>
     var sleeping: UnsafeMutablePointer<WatcherEntry>
@@ -20,22 +18,23 @@ public class FiberLoop {
     var scheduler = Scheduler.current
 
     var currentFiber: UnsafeMutablePointer<Fiber> {
-        @inline (__always) get {
+        @inline(always) get {
             return scheduler.running
         }
     }
 
-    public private(set) static var main = FiberLoop()
-    private static var _current = ThreadSpecific<FiberLoop>()
+    nonisolated(unsafe) public private(set) static var main = FiberLoop()
+    nonisolated(unsafe) private static var _current = ThreadSpecific<FiberLoop>()
+
     public class var current: FiberLoop {
         Thread.isMain
             ? main
-            : FiberLoop._current.get { FiberLoop() }
+            : FiberLoop._current.get(defaultValue: .init())
     }
 
-    var deadline = Time.distantFuture
+    var deadline: Instant = .distantFuture
 
-    var nextDeadline: Time {
+    var nextDeadline: Instant {
         if scheduler.hasReady {
             return now
         }
@@ -60,7 +59,7 @@ public class FiberLoop {
     var readyCount = 0
 
     @usableFromInline
-    var now = Time()
+    var now: Instant = .now
 
     var canceled = false
     public var isCanceled: Bool {
@@ -68,7 +67,7 @@ public class FiberLoop {
     }
 
     var running = false
-    public func run(until deadline: Time = .distantFuture) {
+    public func run(until deadline: Instant = .distantFuture) {
         guard !self.running else {
             return
         }
@@ -89,13 +88,13 @@ public class FiberLoop {
                 }
 
                 let events = try poller.poll(deadline: nextDeadline)
-                now = Time()
+                now = .now
 
                 scheduleReady(events)
                 scheduleExpired()
                 runScheduled()
             } catch {
-                Log.error("poll error \(error)")
+                print("poll error:", error)
             }
         }
 
@@ -149,7 +148,7 @@ public class FiberLoop {
     }
 
     @discardableResult
-    public func wait(for deadline: Time) -> Fiber.State {
+    public func wait(for deadline: Instant) -> Fiber.State {
         insertWatcher(deadline: deadline)
         scheduler.suspend()
         removeWatcher()
@@ -160,7 +159,7 @@ public class FiberLoop {
     public func wait(
         for socket: Descriptor,
         event: IOEvent,
-        deadline: Time
+        deadline: Instant
     ) throws -> Fiber.State {
         try insertWatcher(for: socket, event: event, deadline: deadline)
         scheduler.suspend()
@@ -174,7 +173,7 @@ public class FiberLoop {
     func insertWatcher(
         for descriptor: Descriptor,
         event: IOEvent,
-        deadline: Time
+        deadline: Instant
     ) throws {
         switch event {
         case .read:
@@ -203,7 +202,7 @@ public class FiberLoop {
         removeWatcher()
     }
 
-    func insertWatcher(deadline: Time) {
+    func insertWatcher(deadline: Instant) {
         currentFiber.pointee.deadline = deadline
         if sleeping.isEmpty || deadline >= sleeping.maxDeadline! {
             sleeping.append(currentFiber.pointee.watcherEntry)
@@ -246,15 +245,15 @@ extension UnsafeMutableBufferPointer where Element == FiberLoop.Watchers {
 
 extension UnsafeMutablePointer
 where Pointee == ListEntry<UnsafeMutablePointer<Fiber>> {
-    var deadline: Time {
+    var deadline: Instant {
         pointee.payload.pointee.deadline
     }
 
-    var minDeadline: Time? {
+    var minDeadline: Instant? {
         first?.payload.pointee.deadline
     }
 
-    var maxDeadline: Time? {
+    var maxDeadline: Instant? {
         last?.payload.pointee.deadline
     }
 }

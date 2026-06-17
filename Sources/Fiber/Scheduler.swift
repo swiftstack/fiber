@@ -5,12 +5,13 @@ public class Scheduler {
     private var scheduler: UnsafeMutablePointer<Fiber>
     private(set) var running: UnsafeMutablePointer<Fiber>
 
-    public private(set) static var main = Scheduler()
-    private static var _current = ThreadSpecific<Scheduler>()
+    nonisolated(unsafe) public private(set) static var main = Scheduler()
+    nonisolated(unsafe) private static var _current = ThreadSpecific<Scheduler>()
+
     public class var current: Scheduler {
         Thread.isMain
             ? main
-            : Scheduler._current.get { Scheduler() }
+            : Scheduler._current.get(defaultValue: .init())
     }
 
     init() {
